@@ -1,0 +1,65 @@
+# Lokal demo ucun. `docker compose up` bu fayli oxuyur.
+# .env yaratmaq lazimdir: cp .env.example .env
+
+services:
+
+  # ---------------- PostgreSQL ----------------
+  db:
+    image: postgres:16-alpine
+    container_name: wildcard-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required - see .env.example}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required - see .env.example}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required - see .env.example}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # backend buferi QUTMAMIS baslamasin
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # ---------------- Spring Boot ----------------
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: wildcard-backend
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # butun sirlar .env faylindan gelir (env_file yuxarida) - burada
+      # hec bir sabit deyere yazilmir
+      DB_HOST: db
+      DB_PORT: 5432
+      STORAGE_DIR: /app/uploads
+    volumes:
+      # upload-lar konteyner silinende itmesin
+      - uploads:/app/uploads
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  # ---------------- React + nginx ----------------
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: wildcard-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  uploads:

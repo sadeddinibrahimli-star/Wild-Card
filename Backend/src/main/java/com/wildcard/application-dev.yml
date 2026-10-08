@@ -1,0 +1,6 @@
+wildcard:
+  jwt:
+    secret: pFIZimUveYhoPtUEu6rj6ApWNWC4ZQPB
+    issuer: wild-card
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-days: 14

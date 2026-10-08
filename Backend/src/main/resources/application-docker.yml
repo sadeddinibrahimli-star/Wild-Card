@@ -1,0 +1,96 @@
+# "docker" profili = Docker Compose ile lokal isletmek ucun.
+# H2 yoxdur! Cunku H2 RAM-da isleyir ve konteyner BASLADILANDA
+# baza sifirlanir. Dockerde davamli baza lazimdir -> PostgreSQL.
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # lokal demo: cevvelleri avtomatik yaradir.
+      # REAL serverde bu "validate" olmalidir, yoxsa hamisini itirirsan.
+      ddl-auto: update
+    open-in-view: false
+
+  servlet:
+    multipart:
+      # 2 MB fayl limiti
+      max-file-size: 2MB
+      max-request-size: 4MB
+server:
+  port: 8080
+  # nginx sondan basa forvard lazimdir
+  forward-headers-strategy: framework
+  error:
+    include-stacktrace: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+wildcard:
+  jwt:
+    # 32+ simvol. Bosdursa app development acari yaradir ve WARN yazar.
+    secret: ${JWT_SECRET}
+    issuer: wild-card
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-days: 14
+
+  admin:
+    # Ilk admin hesabi yalniz ADMIN_SEED_ENABLED=true ile seed olunur.
+    enabled: ${ADMIN_SEED_ENABLED:false}
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD}
+
+  # Forgot-password linki: {frontend-url}/#reset/{token}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  require-secrets: true
+
+  storage:
+    # sekiller burada saxlanilir, /files/** dan serve olunur
+    local-dir: ${STORAGE_DIR:/app/uploads}
+
+  rate-limit:
+    window-seconds: 60
+    posts-per-window: 5
+    comments-per-window: 10
+    watchlist-per-window: 10
+
+  affinity:
+    reaction-weight: 1.0
+    threshold: 5.0
+    explicit-score: 10.0
+
+  seed:
+    # Lokal demo melumati. Ishletmak ucin SEED_ENABLED=true + SEED_USER_PASSWORD
+    # .env faylinda olmalidir. Ishletde avtomatik ON olur.
+    enabled: ${SEED_ENABLED:false}
+    user-password: ${SEED_USER_PASSWORD:}
+
+# LOKAL poçt qutusu (SMTP yoxdursa parol sıfırlama linki burada toplanır)
+  dev-mailbox:
+    enabled: ${DEV_MAILBOX_ENABLED:true}
+    file: ${DEV_MAILBOX_FILE:./dev-mailbox.log}
+
+  external:
+    tmdb:
+      api-key: ${TMDB_API_KEY:}
+      base-url: https://api.themoviedb.org/3
+      image-base: https://image.tmdb.org/t/p/w185
+    mail:
+      host: ${MAIL_HOST:}
+      port: ${MAIL_PORT:}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+      from: ${MAIL_FROM:}
+    http:
+      timeout-seconds: 5
+      cache-minutes: 10
+
+logging:
+  level:
+    com.wildcard: INFO

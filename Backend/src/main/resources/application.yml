@@ -1,0 +1,27 @@
+# Əsas fayl. Burada yalnız "hansı profili işə sal" seçimi var.
+# Profilin özü application-dev.yml faylında yazılır.
+
+spring:
+  application:
+    name: wild-card
+
+  # "dev" profili işə düşür -> Spring application-dev.yml faylını avtomatik oxuyur.
+  # Production-da bu sətri "prod" etmək bəsdir, kod dəyişməz.
+  profiles:
+    active: dev
+
+  servlet:
+    multipart:
+      # 2 MB fayl limiti
+      max-file-size: 2MB
+      max-request-size: 4MB
+
+wildcard:
+  jwt:
+    secret: ${JWT_SECRET:}
+    access-token-expiration-minutes: 60
+    refresh-token-expiration-days: 30
+    issuer: wild-card
+
+  storage:
+    local-dir: ${STORAGE_DIR:uploads}

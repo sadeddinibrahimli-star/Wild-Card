@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:wildcard-test;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  h2:
+    console:
+      enabled: false
+
+wildcard:
+  # doc 4.1 testleri ucun admin hesabi seed olunur
+  admin:
+    enabled: true
+    email: admin@wildcard.com
+    password: admin123
+
+  jwt:
+    secret: test-only-wild-card-jwt-secret-key-0123456789-abcdefghij
+    issuer: wild-card-test
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-days: 14
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+  main:
+    allow-bean-definition-overriding: true
+
+wildcard-storage-override: none

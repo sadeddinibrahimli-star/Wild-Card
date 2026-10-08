@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Spring Boot-un "ana" pomi. Buradan bütun versiyalar gəlir,
+         ona görə dependency-lərə versiya yazmağa ehtiyac yoxdur. -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.wildcard</groupId>
+    <artifactId>wild-card</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>wild-card</name>
+    <description>Wild Card - gamified social RPG platform</description>
+
+    <properties>
+        <!-- Addım 1: Java 21 istifadə edirik (doc 17+ deyir, 21 daha yeni) -->
+        <java.version>21</java.version>
+        <!-- Swagger UI (doc: springdoc-openapi) -->
+        <springdoc.version>2.8.5</springdoc.version>
+        <!-- JWT yaratmaq/oxumaq (Addım 11). "io.jsonwebtoken" paketi -->
+        <jjwt.version>0.12.6</jjwt.version>
+        <!-- HTML sanitizing (doc section 10) -->
+        <jsoup.version>1.18.3</jsoup.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- HTTP API: @RestController, JSON avtomatik (jackson) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- BAZA: @Entity, @Id, @ManyToOne + JpaRepository (Repository qatı) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- YOXLAMA: @NotBlank, @Size, @Email
+             (Addım 6/7-də GlobalExceptionHandler bunun sayəsində işləyəcək) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- TƏHLÜKƏSİZLİK: JWT, BCrypt, @PreAuthorize
+             (Addım 10 SecurityConfig) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Lombok: @Data, @Getter, @RequiredArgsConstructor
+             (Service-lərdə kodun yarısını qısaltır) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- H2: lokal in-memory baza. application-dev.yml-da istifadə olunur. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- PostgreSQL: real baza (server / production) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Swagger UI: http://localhost:8080/swagger-ui.html -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- HTML sanitizing for user-generated content (doc section 10) -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+
+        <!-- ============ JWT (Addım 11) ============
+             Token YARATMAQ üçün alət. Diqqət: bu TOKEN deyil, KITABXANAdır.
+             - api     : yazdığımız metodlar (icazəli API)
+             - impl    : həqiqi implementasiya (kodunu yoxmuruz -> runtime)
+             - jackson : JSON-a çevirmək üçün (runtime)
+             "api" olmadan "impl" işləməz, ona görə üçü bir yerdədir. -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- TEST: JUnit 5 + AssertJ (Addım 30) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- xarici API cavablari ve hesablamalar ucun cache -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- forgot-password e-poçt göndərişi (SMTP yoxdursa konsola yazılır) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- FAZA 6: real-time chat / typing / seen -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-messaging</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Lombok yalnız kompilyasiya zamanı lazımdır, jar-a qoyma -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

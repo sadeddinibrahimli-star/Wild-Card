@@ -1,0 +1,96 @@
+# "prod" profili = istehsal.
+#
+# Bu profilde heç bir SIR default deyərə malik deyil.
+# Env dəyişəni yoxdursa tətbiq AÇILMAQDA dayanır - susmaya yol verilmir.
+#
+#   DB_PASSWORD / JWT_SECRET / ADMIN_PASSWORD  ->  məcburidir
+#
+# necə işə salınır:
+#   export SPRING_PROFILES_ACTIVE=prod
+#   export DB_PASSWORD=...  JWT_SECRET=...  ADMIN_PASSWORD=...
+#   java -jar app.jar
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD:?DB_PASSWORD is required}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # istehsalda ddl-auto "update" OLMAZ - sxemi kodla idarə olunur.
+      # "validate" dəyişiklikləri yoxlayır, heç nə yaratmır.
+      ddl-auto: validate
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 4MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+  error:
+    # stack trace istifadəçiyə göstərilmir
+    include-stacktrace: never
+    include-message: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+wildcard:
+  jwt:
+    # ⚠️  MƏCBURİDİR. 32+ simvol. Dayanma deyil - tətbiq açılmır.
+    secret: ${JWT_SECRET}
+    issuer: wild-card
+    access-token-expiration-minutes: ${JWT_ACCESS_MINUTES:30}
+    refresh-token-expiration-days: ${JWT_REFRESH_DAYS:14}
+
+  admin:
+    # İlk admin hesabı. Parol MƏCBURİDİR.
+    enabled: ${ADMIN_SEED_ENABLED:false}
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+
+  seed:
+    # istehsalda demo məlumatı söndürülür
+    enabled: false
+    user-password: ""
+
+  # Forgot-password linki: {frontend-url}/#reset/{token}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  require-secrets: true
+
+  storage:
+    local-dir: ${STORAGE_DIR:./uploads}
+
+  # istəhsalda poçt qutusu SÖNDÜRÜLÜR
+  dev-mailbox:
+    enabled: false
+    file: ""
+
+  external:
+    tmdb:
+      api-key: ${TMDB_API_KEY:}
+      base-url: https://api.themoviedb.org/3
+      image-base: https://image.tmdb.org/t/p/w185
+    mail:
+      host: ${MAIL_HOST:}
+      port: ${MAIL_PORT:25}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+      from: ${MAIL_FROM}
+    http:
+      timeout-seconds: 5
+      cache-minutes: 10
+
+logging:
+  level:
+    root: INFO
+    com.wildcard: INFO
+  # heç bir sır loga yazılmır

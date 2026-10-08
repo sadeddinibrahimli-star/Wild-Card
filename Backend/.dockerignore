@@ -1,0 +1,12 @@
+target/
+uploads/
+*.iml
+.idea/
+.mvn/
+mvnw
+mvnw.cmd
+*.log
+.git/
+.gitignore
+Dockerfile
+.dockerignore

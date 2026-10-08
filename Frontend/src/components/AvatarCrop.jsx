@@ -1,0 +1,212 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Icon from './Icon'
+
+/**
+ * Profil şəklini kəsmə (crop).
+ *
+ * Keçmişdə şəkil avtomatik "cover" ile kəsilirdi ve istifadeci
+ * qerar vera bilmirdi. Burada istifadeci:
+ *   - sekili surukleyib (drag) kadri hereket edir
+ *   - zoom滑 ilə yaxinlasir
+ *   - "Use this picture" ile kestiyi qeyd edir
+ *
+ * Netice 512x512 JPEG blob kimi qaytarilir (servere bu gonderilir).
+ */
+
+const SIZE = 1024     // kəsilmiş şəklin ölçüsü (profil kartında da aydın görünsün)
+const FRAME = 280     // ekrandakı kadr ölçüsü
+
+export default function AvatarCrop({ file, onCancel, onDone, busy }) {
+  const [img, setImg] = useState(null)
+  const [zoom, setZoom] = useState(1)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [dragging, setDragging] = useState(false)
+  const canvasRef = useRef(null)
+  const dragStart = useRef(null)
+  const imgRef = useRef(null)
+  const urlRef = useRef(null)
+
+  // şəkli oxu
+  useEffect(() => {
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    urlRef.current = url
+    const image = new Image()
+    image.onload = () => setImg(image)
+    image.src = url
+    return () => {
+      URL.revokeObjectURL(url)
+      urlRef.current = null
+    }
+  }, [file])
+
+  // ən kiçik zoom: şəkil kadrı tam doldurur
+  const minZoom = useCallback(() => {
+    if (!img) return 1
+    return Math.max(FRAME / img.width, FRAME / img.height)
+  }, [img])
+
+  // kadr daima şəkli örtür, artıq zoom sürüşdürmə limitini verir
+  const limit = useCallback(() => {
+    if (!img) return 0
+    const scale = minZoom() * zoom
+    const w = img.width * scale
+    const h = img.height * scale
+    return Math.max(0, (w - FRAME) / 2)
+  }, [img, minZoom, zoom])
+
+  // sürüşdürmə
+  useEffect(() => {
+    if (!img) return
+    setZoom(1)
+    setOffset({ x: 0, y: 0 })
+  }, [img])
+
+  const onPointerDown = (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragStart.current = { px: e.clientX, py: e.clientY, ox: offset.x, oy: offset.y }
+    setDragging(true)
+  }
+
+  const onPointerMove = (e) => {
+    if (!dragStart.current) return
+    const lim = limit()
+    const dx = e.clientX - dragStart.current.px + dragStart.current.ox
+    const dy = e.clientY - dragStart.current.py + dragStart.current.oy
+    setOffset({
+      x: Math.max(-lim, Math.min(lim, dx)),
+      y: Math.max(-lim, Math.min(lim, dy)),
+    })
+  }
+
+  const onPointerUp = () => {
+    dragStart.current = null
+    setDragging(false)
+  }
+
+  // kadrı canvas-a çəkir
+  useEffect(() => {
+    if (!img) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, FRAME, FRAME)
+
+    const scale = minZoom() * zoom
+    const w = img.width * scale
+    const h = img.height * scale
+
+    // profil sekli berkak (smooth) olmalidir - pixellestirme yoxdur
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, (FRAME - w) / 2 + offset.x, (FRAME - h) / 2 + offset.y, w, h)
+
+    imgRef.current = canvas
+  }, [img, zoom, offset, minZoom])
+
+  /** 512x512 JPEG yaradır və yuxarı ötürür. */
+  const confirm = () => {
+    const src = imgRef.current
+    if (!src) return
+    const out = document.createElement('canvas')
+    out.width = SIZE
+    out.height = SIZE
+    const ctx = out.getContext('2d')
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(src, 0, 0, SIZE, SIZE)
+
+    out.toBlob(
+      (blob) => {
+        if (!blob) return
+        const cropped = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+        onDone(cropped)
+      },
+      'image/jpeg',
+      0.92,
+    )
+  }
+
+  const reset = () => {
+    setZoom(1)
+    setOffset({ x: 0, y: 0 })
+  }
+
+  return (
+    <div className="crop-dim" role="dialog" aria-label="Crop profile picture">
+      <div className="crop-modal card">
+        <div className="row between">
+          <h3>Crop profile picture</h3>
+          <button className="wl-del" onClick={onCancel} title="Cancel">
+            <Icon name="close" size={14} />
+          </button>
+        </div>
+
+        <p className="muted small">
+          Drag the picture to choose what stays in frame. Zoom in if you need.
+        </p>
+
+        <div
+          className={'crop-frame' + (dragging ? ' dragging' : '')}
+          style={{ width: FRAME, height: FRAME }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        >
+          {!img ? (
+            <span className="muted small">Loading...</span>
+          ) : (
+            <canvas ref={canvasRef} width={FRAME} height={FRAME} />
+          )}
+          <span className="crop-ring" />
+          <span className="crop-grid" />
+        </div>
+
+        <div className="row between crop-tools">
+          <button
+            className="btn ghost"
+            onClick={() => setZoom((z) => Math.max(1, +(z - 0.15).toFixed(2)))}
+            disabled={!img || zoom <= 1}
+            title="Zoom out"
+          >
+            −
+          </button>
+
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="0.05"
+            value={zoom}
+            onChange={(e) => setZoom(+e.target.value)}
+            disabled={!img}
+            aria-label="Zoom"
+          />
+
+          <button
+            className="btn ghost"
+            onClick={() => setZoom((z) => Math.min(3, +(z + 0.15).toFixed(2)))}
+            disabled={!img}
+            title="Zoom in"
+          >
+            +
+          </button>
+
+          <button className="btn ghost" onClick={reset} disabled={!img}>
+            Reset
+          </button>
+        </div>
+
+        <div className="row">
+          <button className="btn" onClick={confirm} disabled={!img || busy}>
+            {busy ? 'Uploading...' : 'Use this picture'}
+          </button>
+          <button className="btn ghost" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

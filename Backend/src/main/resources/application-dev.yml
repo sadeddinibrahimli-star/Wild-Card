@@ -1,0 +1,94 @@
+# "dev" profili = lokal inkisaf (development) ucun.
+# H2 bazasi RAM-da isleyir. Production ucun bunu DUZMA - application-prod.yml yaz (PostgreSQL).
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:wildcard;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      # "update": Entity siniflerinden cevvlleri avtomatik yaradir.
+      # production-da bu "validate" ve ya Flyway (migration) olmalidir!
+      ddl-auto: update
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: true
+
+  servlet:
+    multipart:
+      # 2 MB fayl limiti
+      max-file-size: 2MB
+      max-request-size: 4MB
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+wildcard:
+  # YALNIZ DEV: lokal inkişaf üçün admin seed. Bu dəyərlər prod/docker-a KEÇMİR -
+  # application-prod.yml və application-docker.yml parolu yalnız env-dən oxuyur.
+  admin:
+    enabled: ${ADMIN_SEED_ENABLED:true}
+    email: ${ADMIN_EMAIL:admin@wildcard.local}
+    password: ${ADMIN_PASSWORD:dev-admin-local-only}
+
+  jwt:
+    # HS256 ucun EN AZ 32 simvol olmalidir
+    secret: ${JWT_SECRET:}
+    issuer: wild-card
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-days: 14
+
+  # Forgot-password linki: {frontend-url}/#reset/{token}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  require-secrets: false
+
+  storage:
+    local-dir: ${STORAGE_DIR:uploads}
+
+  rate-limit:
+    window-seconds: 60
+    posts-per-window: 5
+    comments-per-window: 10
+    watchlist-per-window: 10
+
+  affinity:
+    # her reaksiyada bu qadere artir
+    reaction-weight: 1.0
+    # bu reqeme catanda "beyenilmis movzu" sayilir
+    threshold: 5.0
+    # istifadeci movzunu ozu secerse bu qadere
+    explicit-score: 10.0
+
+  seed:
+    # Lokal demo melumati. Ishletmak ucin SEED_ENABLED=true + SEED_USER_PASSWORD
+    # .env faylinda olmalidir. Ishletde avtomatik ON olur.
+    enabled: ${SEED_ENABLED:false}
+    user-password: ${SEED_USER_PASSWORD:}
+
+# LOKAL poçt qutusu (SMTP yoxdursa parol sıfırlama linki burada toplanır)
+  dev-mailbox:
+    enabled: ${DEV_MAILBOX_ENABLED:true}
+    file: ${DEV_MAILBOX_FILE:./dev-mailbox.log}
+
+  external:
+    tmdb:
+      api-key: ${TMDB_API_KEY:}
+      base-url: https://api.themoviedb.org/3
+      image-base: https://image.tmdb.org/t/p/w185
+    mail:
+      host: ${MAIL_HOST:}
+      port: ${MAIL_PORT:}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+      from: ${MAIL_FROM:}
+    http:
+      timeout-seconds: 5
+      cache-minutes: 10

@@ -1,0 +1,48 @@
+# --- Java / Maven ---
+Backend/target/
+target/
+*.jar
+*.class
+*.iml
+
+# --- Node ---
+node_modules/
+dist/
+npm-debug.log*
+yarn-error.log*
+
+# --- Docker / secrets ---
+.env
+*.env.local
+docker-compose.override.yml
+
+# --- uploads (runtime yaradilir) ---
+uploads/
+Backend/uploads/
+*.log
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# --- lokal agent / tooling ---
+.freebuff/
+
+# --- Docs (lokal, repoya dusmur) ---
+Docs/
+
+# --- screenshots / design artefaktlari ---
+screenshots/
+screenshot/
+**/screenshots/
+Docs/design/
+
+# --- lokal test artefaktlari ---
+Backend/f.json
+test-results/
+playwright-report/
+blob-report/
+coverage/
+.playwright/
