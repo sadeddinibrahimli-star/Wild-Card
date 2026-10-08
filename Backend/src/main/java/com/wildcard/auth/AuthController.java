@@ -40,7 +40,8 @@ public class AuthController {
 
 
     /**
-     * Həmişə eyni cavab qaytarır - istifadəçinin varlığı sızdırılmır.
+     * Always returns the same response so the existence of a user
+     * is never leaked.
      */
     @PostMapping("/forgot-password")
     public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

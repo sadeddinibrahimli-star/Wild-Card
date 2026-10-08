@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { errMsg, get, post, put, upload } from '../api'
 import Icon from '../components/Icon'
 
-/** Backend ReactionType enum-u ilə eynidir. */
+/** Same as the backend ReactionType enum. */
 const RATINGS = [
   { type: 'FIRE', icon: 'flame' },
   { type: 'HEART', icon: 'heart' },
@@ -47,7 +47,7 @@ export function MusicArc() {
     }
   }
 
-  /** Gündəlik check-in - backend streak-i hesablayır. */
+  /** Daily check-in - the backend computes the streak. */
   async function doCheckIn() {
     try {
       setCheckIn(await post('/music/arc/checkin', {}))
@@ -56,7 +56,7 @@ export function MusicArc() {
     }
   }
 
-  /** Eyni reaksiyanı təkrar basmaq reaksiyanı silir (backend toggle edir). */
+  /** Pressing the same reaction again removes it (the backend toggles). */
   async function react(type) {
     try {
       setReactions(await post(`/music/arcs/${current.id}/reaction`, { type }))
@@ -66,8 +66,9 @@ export function MusicArc() {
   }
 
   /**
-   * Artist adini axtarir. iTunes-a backend gedir - frontend xarici API-ya getmir.
-   * Axtarilan sadece artistdir; neticeler butun mahnilardir.
+   * Searches the artist. iTunes goes through the backend - the frontend never
+   * calls an external API. Only the artist is searched; the results are all
+   * of their songs.
    */
   async function doSearchArtist() {
     const term = query.trim()
@@ -83,7 +84,7 @@ export function MusicArc() {
     }
   }
 
-  /** Neticede bir mahni sec - forma ve qabiq avtomatik dolur. */
+  /** Pick one song in the results - art and title fill in automatically. */
   function pickTrack(track) {
     setForm({
       artist: track.artist || form.artist,
@@ -95,7 +96,7 @@ export function MusicArc() {
     setQuery('')
   }
 
-  /** Axtaris uygun gelmediyse istifadeci ozu qabiq yikleyir. */
+  /** When nothing matches, the user uploads the artwork themselves. */
   async function onPickCover(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -120,7 +121,7 @@ export function MusicArc() {
       setForm({ artist: '', trackName: '', note: '', albumArtUrl: '' })
       setChanging(false)
       await load()
-      // Profile-un sol tərəfdəki möhürü də yenilənsin
+      // also refresh the seal on the left side of the profile
       window.dispatchEvent(new CustomEvent('wc:music-arc-changed'))
     } catch (err) {
       setError(errMsg(err, 'Could not save that arc'))
@@ -229,7 +230,7 @@ export function MusicArc() {
 
       {changing && (
         <form className="card add-form music-form" onSubmit={save}>
-          {/* 1-ci addim: artist adini yaz, axtar (iTunes - backend vasitesi ile) */}
+          {/* step 1: type the artist name and search (iTunes via the backend) */}
           <div className="field">
             <label className="muted small">Search by artist</label>
             <div className="row">
@@ -257,7 +258,7 @@ export function MusicArc() {
             </p>
           </div>
 
-          {/* neticeler - musiqi qabigi ile */}
+          {/* results - with the album art */}
           {musicSearch?.length > 0 && (
             <div className="track-list">
               {musicSearch.map((track, i) => (
@@ -284,7 +285,7 @@ export function MusicArc() {
             </div>
           )}
 
-          {/* 2-ci addim: ya secilib, ya da birbaqa el ile yazilir */}
+          {/* step 2: either pick one or fill it in manually */}
           <div className="field">
             <label className="muted small">
               {musicSearch?.length > 0 ? 'Or fill it in yourself' : 'Artist & song'}
@@ -303,7 +304,7 @@ export function MusicArc() {
             />
           </div>
 
-          {/* qabiq: axtarisdan gelir, yoxsa istifadeci yukleyir */}
+          {/* artwork: from the search, or uploaded by the user */}
           <div className="field">
             <label className="muted small">Cover</label>
             {form.albumArtUrl ? (

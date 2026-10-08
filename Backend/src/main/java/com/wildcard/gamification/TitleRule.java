@@ -3,8 +3,8 @@ package com.wildcard.gamification;
 import java.util.List;
 
 /**
- * Şəxsiyyət başlığı dominant stat + ikinci stat cütündən seçilir.
- * Hər başlığın özüne xas bir flavor cümləsi var.
+ * The personality title is picked from the dominant stat plus the second
+ * stat of the pair. Every title has its own flavor sentence.
  */
 public final class TitleRule {
 

@@ -59,10 +59,9 @@ function param(name) {
 }
 
 /**
- * Hər route öz "id"-sini oxuyur.
- * Əvvəl hamısı eyni param-ı oxuyurdu: '#post?id=12' açılanda Profile və
- * Compatibility də id=12 götürürdü -> `/users/12` (404) və
- * `/compatibility/12` səhv sorğuları çıxırdı.
+ * Every route reads its own "id". They used to all read the same param:
+ * opening '#post?id=12' also made Profile and Compatibility take id=12,
+ * producing `/users/12` (404) and a wrong `/compatibility/12` request.
  */
 const paramOf = (route, name = 'id') => {
   const [r, q] = location.hash.slice(1).split('?')
@@ -72,7 +71,7 @@ const paramOf = (route, name = 'id') => {
 const postId = () => paramOf('post')
 const compatId = () => paramOf('compatibility')
 const profileId = () => paramOf('profile')
-// #reset/<token> - token birbaşa yolda olur (query deyil)
+// #reset/<token> - the token lives in the path, not in the query
 const resetToken = () => {
   const raw = location.hash.slice(1)
   if (raw.startsWith('reset/')) return raw.slice('reset/'.length).trim()
@@ -139,11 +138,10 @@ function Shell() {
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [rt, setRt] = useState(realtimeStatus())
 
-  // canlı bağlantı vəziyyətini izlə
   useEffect(() => onRealtimeStatus(setRt), [])
 
   // doc 4.3: "Receive real-time notifications" - /user/queue/alerts
-  // Bağlantı yoxdursa köhnə polling (5s) işləməyə davam edir.
+  // Without a connection the old polling (5s) keeps running.
   useEffect(() => {
     if (rt !== 'active') return undefined
     return subscribe('/user/queue/alerts', () => {
@@ -174,7 +172,7 @@ function Shell() {
   function go(route, sub) {
     if (route === 'post') location.hash = '#post?id=' + sub
     else if (route === 'compatibility') location.hash = '#compatibility?id=' + sub
-    // "@istifadeci" adına basmaq profili açır (əvvəl '#user'ə gedirdi - belə route yox idi)
+    // clicking "@username" opens the profile (it used to go to '#user', which was not a route)
     else if (route === 'user') location.hash = '#profile?id=' + sub
     else location.hash = '#' + route
 
@@ -183,7 +181,7 @@ function Shell() {
     }
   }
 
-  // parol sıfırlama: #reset/{token} - login olmadan da açıla bilməlidir
+  // password reset: #reset/{token} - must also open without being logged in
   if (hash === 'reset' || hash.startsWith('reset/')) return <ResetPassword token={resetToken()} />
 
   if (!user) return hash === 'register' ? <Register /> : <Login />
@@ -221,9 +219,8 @@ function Shell() {
             ) : key === 'profile' ? (
               <Profile userId={profId} go={go} />
             ) : (
-              /* qalan overlay-lar (o cümlədən achievements + compatibility)
-                 standart geri düyməsi alır — əvvəl bunlar special-case-da
-                 idimə və pəncərədə heç bir çıxış yox idi */
+              // every other overlay (including achievements + compatibility) gets the
+              // standard back button - they used to be special-cased with no way out
               <>
                 <button className="back-btn" onClick={() => go('feed')}>
                   ← Back

@@ -10,8 +10,8 @@ export default function Login() {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  // "Forgot password" axını: email istə → backend link yaradır →
-  // lokalda SMTP olmadığı üçün linki dev-mailbox-dan oxuyub göstəririk.
+  // "Forgot password" flow: ask for an email -> the backend creates a link ->
+  // locally there is no SMTP, so we read the link from the dev mailbox.
   const [mode, setMode] = useState('signin') // signin | forgot
   const [resetEmail, setResetEmail] = useState('')
   const [resetBusy, setResetBusy] = useState(false)
@@ -41,9 +41,9 @@ export default function Login() {
       const res = await post('/auth/forgot-password', { email: resetEmail.trim() })
       setResetMsg(res?.message || 'If that email exists we sent a reset link')
 
-      // Lokal quruluşda e-poçt göndərilmir - link dev-poçt qutusundadır.
-      // Bu endpoint autentifikasiya tələb edir (yalnız dev profilində var),
-      // ona görə yalnız daxil olmuş istifadəçiyə göstəririk.
+      // Locally no e-mail is sent - the link sits in the dev mailbox.
+      // That endpoint requires authentication (it only exists in the dev profile),
+      // so it is only shown to a signed-in user.
       if (localStorage.getItem('wc_token')) {
         try {
           const box = await get('/dev/mailbox')
@@ -52,7 +52,7 @@ export default function Login() {
           )
           if (hit?.body) setResetLink(hit.body)
         } catch {
-          /* dev-mailbox yoxdursa önemsizdir */
+          /* no dev mailbox (e.g. production) - ignore */
         }
       }
     } catch (err) {

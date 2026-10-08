@@ -28,7 +28,7 @@ const WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 const SECTIONS = TABS.map(([key]) => key)
 const isSection = (v) => typeof v === 'string' && SECTIONS.includes(v)
 
-/** XP actionını adam oxuna bilən cümləyə çevirir (doc 4.3 - XP history). */
+/** Turns an XP action into a human readable sentence (doc 4.3 - XP history). */
 const XP_LABEL = {
   POST: 'Published a post',
   COMMENT: 'Commented',
@@ -45,7 +45,7 @@ const slug = (v) => String(v).toLowerCase()
 
 export default function Profile({ userId, go }) {
   const { user, logout, refreshMe } = useAuth()
-  // userId verilibse basqasinin profili - oxunur, redakte olunmur
+  // userId given -> someone else's profile: read-only, not editable
   const viewId = userId ? Number(userId) : user.id
   const isOwn = viewId === user.id
   const [section, setSection] = useState('activity')
@@ -66,7 +66,7 @@ export default function Profile({ userId, go }) {
   const [uploading, setUploading] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
   const [cropFile, setCropFile] = useState(null)
-  // Edit profile dialoqu: nick / email / bio / parol
+  // edit dialog: nick / email / bio / password
   const [editOpen, setEditOpen] = useState(false)
   const [edit, setEdit] = useState({
     username: '',
@@ -84,7 +84,7 @@ export default function Profile({ userId, go }) {
     window.dispatchEvent(new CustomEvent('wc:section', { detail: 'profile:' + section }))
   }, [section])
 
-  // MusicArc yeni arc saxlayanda sol tərəfdəki möhürü yenilə
+  // refresh the seal on the left when MusicArc saves a new arc
   useEffect(() => {
     if (!isOwn) return
     const onArc = () => {
@@ -112,7 +112,7 @@ export default function Profile({ userId, go }) {
           get('/leaderboard/me'),
           get(`/users/${viewId}/achievements`),
           get(`/users/${viewId}/music-arc`),
-          // ozelim qruplarimiz yalnizca oz profilimizde
+          // our custom groups only show on our own profile
           isOwn ? get('/users/me/topics') : Promise.resolve([]),
           isOwn ? Promise.resolve(true) : get(`/social/follow/${viewId}/status`),
         ])
@@ -137,7 +137,7 @@ export default function Profile({ userId, go }) {
 
   /**
    * Doc 4.3: "View own XP history".
-   * Backend `GET /users/me/xp-history` - oxumaq üçün, XP heç vaxt düzəldilmir.
+   * Backend `GET /users/me/xp-history` - read-only, XP can never be edited.
    */
   async function loadXpHistory(size = 10) {
     if (!isOwn) return
@@ -149,13 +149,12 @@ export default function Profile({ userId, go }) {
     }
   }
 
-  // XP tarixçəsi yalnız öz profilində və Activity tab-ında yüklənir
   useEffect(() => {
     if (isOwn && section === 'activity' && xpLog === null) loadXpHistory()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOwn, section])
 
-  /** Fayl seçilir -> kəsmə dialoqu açılır (heç nə avtomatik kəsilmir). */
+  /** A file was picked -> the crop dialog opens (nothing is cropped automatically). */
   function pickAvatar(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -163,7 +162,7 @@ export default function Profile({ userId, go }) {
     setCropFile(file)
   }
 
-  /** Yalnız istifadəçinin kəsdiyi şəkil yüklənir. */
+  /** Only the picture the user cropped is uploaded. */
   async function applyCrop(file) {
     setUploading(true)
     try {
@@ -180,12 +179,11 @@ export default function Profile({ userId, go }) {
     }
   }
 
-  /** Ana səhifəyə qayıt (SPA routing - səhifə yenidən yüklənmir). */
+  /** Go back to the home page (SPA routing - the page is not reloaded). */
   function goHome() {
     location.hash = '#feed'
   }
 
-  /** "Edit profile" dialoquunu aç — nick / email / bio / parol redaktəsi. */
   function openEdit() {
     setEdit({
       username: card.username || '',
@@ -199,7 +197,7 @@ export default function Profile({ userId, go }) {
     setEditOpen(true)
   }
 
-  /** PUT /users/me — yalnız dəyişən sahələr göndərilir, parol üçün cari parol lazımdır. */
+  /** PUT /users/me - only changed fields are sent; changing the password needs the current one. */
   async function saveProfile(e) {
     e.preventDefault()
     setEditErr(null)
@@ -240,7 +238,7 @@ export default function Profile({ userId, go }) {
     }
   }
 
-  /** Basqasinin profilinde follow / unfollow. */
+  /** Follow / unfollow on someone else's profile. */
   async function toggleFollow() {
     try {
       if (isFollowing) await del(`/social/follow/${viewId}`)
@@ -287,7 +285,7 @@ export default function Profile({ userId, go }) {
     )
   }
 
-  // profil acilan kadr "qara ekran" kimi gorunmesin - skelet gosterilir
+  // while the profile loads show a skeleton - an open profile must not look like a black screen
   if (error && !card) {
     return (
       <div className="section">
@@ -330,7 +328,7 @@ export default function Profile({ userId, go }) {
       </div>
 
       <div className="prof-grid">
-        {/* ---------------- left: the card ---------------- */}
+        {{/* ---------------- left: the card ---------------- */}}
         <aside className="prof-left">
           <div className="prof-tilt" style={tilt.style} ref={tilt.ref}>
             <Card
@@ -386,7 +384,7 @@ export default function Profile({ userId, go }) {
                   </button>
                 </div>
 
-                {/* doc 4.3 leaderboard + doc 4.1/4.2 idarəetmə səhifələrinə keçid */}
+                {{/* doc 4.3 leaderboard + links to the doc 4.1/4.2 admin pages */}}
                 <div className="row">
                   <button
                     className="btn ghost"
@@ -423,7 +421,7 @@ export default function Profile({ userId, go }) {
           </div>
         </aside>
 
-        {/* ---------------- right: tabs + content ---------------- */}
+        {{/* ---------------- right: tabs + content ---------------- */}}
         <div className="prof-right">
           <nav className="tabs small">
             {TABS.map(([key, label]) => (
@@ -468,7 +466,7 @@ export default function Profile({ userId, go }) {
                 </div>
               </div>
 
-              {/* Doc 4.3: öz XP tarixçəsi */}
+              {{/* own XP history (doc 4.3) */}}
               {isOwn && (
                 <div className="card">
                   <div className="row between">
@@ -607,7 +605,7 @@ export default function Profile({ userId, go }) {
         </div>
       </div>
 
-      {/* ------- Edit profile: nick / email / bio / parol ------- */}
+      {{/* ------- Edit profile: nick / email / bio / password ------- */}}
       {editOpen && (
         <div className="crop-dim" role="dialog" aria-label="Edit profile">
           <form className="crop-modal card" onSubmit={saveProfile}>
@@ -738,7 +736,7 @@ function useTilt() {
   return { style, ref }
 }
 
-/** Başqasının music arc-i - yalnız oxumaq üçün. */
+/** Another user's music arc - read-only. */
 function PublicArc({ arc }) {
   if (!arc?.trackName) return <p className="muted small">No music arc set yet.</p>
   return (

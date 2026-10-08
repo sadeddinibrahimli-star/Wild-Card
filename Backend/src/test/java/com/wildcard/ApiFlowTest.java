@@ -18,9 +18,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Əsas API axınları: auth, profil, feed, validation, rol yoxlaması.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -96,7 +93,7 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.message").exists());
     }
 
-    // ---------------- profil ----------------
+    // ---------------- profile ----------------
 
     @Test
     void meReturnsProfile() throws Exception {
@@ -185,11 +182,11 @@ class ApiFlowTest {
         }
     }
 
-    // ---------------- xarici axtarış (açar lazım deyil) ----------------
+    // ---------------- external search (no API key needed) ----------------
 
     @Test
     void titleSearchDegradesGracefully() throws Exception {
-        // xarici xidmət offline olsa belə 500 qaytarmamalıdır
+        // must not return 500 even when the external service is offline
         int status = mvc.perform(get("/api/v1/search/titles?q=test&type=ANIME")
                         .header("Authorization", "Bearer " + token))
                 .andReturn().getResponse().getStatus();
@@ -197,7 +194,7 @@ class ApiFlowTest {
                 "axtarış 200 qaytarmalıdır, got: " + status);
     }
 
-    // ---------------- doc 4.1 Administration ----------------
+    // ---------------- admin (doc 4.1) ----------------
 
     @Autowired
     com.wildcard.users.UserRepository userRepository;
@@ -205,14 +202,12 @@ class ApiFlowTest {
     @Autowired
     org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    /** Doc 4.1: admin hesab yarada bilər. */
     @Test
     void adminCanCreateAccount() throws Exception {
         String email = "created-" + System.nanoTime() + "@wildcard.test";
         mvc.perform(patch("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
 
-        // admin ilə login
         String adminToken = loginAs("admin@wildcard.com", "admin123");
 
         mvc.perform(post("/api/v1/admin/users")
@@ -226,7 +221,6 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.data.accountStatus").value("ACTIVE"));
     }
 
-    /** Doc 4.1: hesab redaktə olunur. */
     @Test
     void adminCanUpdateAndSuspendAccount() throws Exception {
         String adminToken = loginAs("admin@wildcard.com", "admin123");
@@ -242,20 +236,17 @@ class ApiFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.bio").value("set by admin"));
 
-        // suspend
         mvc.perform(patch("/api/v1/admin/users/" + victim + "/status?status=SUSPENDED")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accountStatus").value("SUSPENDED"));
 
-        // reactivate
         mvc.perform(patch("/api/v1/admin/users/" + victim + "/status?status=ACTIVE")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accountStatus").value("ACTIVE"));
     }
 
-    /** Admin olmayan istifadəçi admin endpoint-lərinə toxunmamalıdır. */
     @Test
     void normalUserCannotReachAdminEndpoints() throws Exception {
         mvc.perform(get("/api/v1/admin/stats").header("Authorization", "Bearer " + token))
@@ -270,7 +261,6 @@ class ApiFlowTest {
                 .andExpect(status().isForbidden());
     }
 
-    /** Doc 4.1: admin özünü kilidləyə bilməz. */
     @Test
     void adminCannotSuspendSelf() throws Exception {
         String adminToken = loginAs("admin@wildcard.com", "admin123");
@@ -279,7 +269,6 @@ class ApiFlowTest {
                 .andExpect(status().isBadRequest());
     }
 
-    /** Doc 4.1: admin axtarış süzgəcləri. */
     @Test
     void adminUserSearchWorks() throws Exception {
         String adminToken = loginAs("admin@wildcard.com", "admin123");
@@ -294,12 +283,10 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.data.content[0].role").value("ADMIN"));
     }
 
-    /** Doc 4.2: report məzmunu önizlənməsi ilə gəlir. */
     @Test
     void reportListIncludesContentPreview() throws Exception {
         String adminToken = loginAs("admin@wildcard.com", "admin123");
 
-        // sirf poçt yaradıb report etmek deyil - mövcud content-i şikayət edirik
         String postBody = mvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -328,7 +315,6 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.data.content[0].reportedPostHidden").value(false));
     }
 
-    /** Doc 4.1: platforma statistikası. */
     @Test
     void adminStatsCoverDocFields() throws Exception {
         String adminToken = loginAs("admin@wildcard.com", "admin123");
@@ -340,14 +326,12 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.data.postsPerDay.length()").value(7));
     }
 
-    // ---------------- tam profil redaktəsi: nick / email / parol ----------------
+    // ---------------- full profile edit: nick / email / password ----------------
 
-    /** PUT /users/me — uğursuz hallar: səhv cari parol, tutuşan nick, zəif parol, qısa nick. */
     @Test
     void updateProfileRejectsInvalidChanges() throws Exception {
         String t = token;
 
-        // cari parol səhvdir
         mvc.perform(put("/api/v1/users/me")
                         .header("Authorization", "Bearer " + t)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -357,7 +341,6 @@ class ApiFlowTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Current password is incorrect"));
 
-        // artıq mövcud olan username
         mvc.perform(put("/api/v1/users/me")
                         .header("Authorization", "Bearer " + t)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -366,7 +349,6 @@ class ApiFlowTest {
                                 """))
                 .andExpect(status().isBadRequest());
 
-        // yeni parol rəqəm saxlamır (reset-flow ilə eyni qayda)
         mvc.perform(put("/api/v1/users/me")
                         .header("Authorization", "Bearer " + t)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -375,7 +357,6 @@ class ApiFlowTest {
                                 """))
                 .andExpect(status().isBadRequest());
 
-        // qısa username (DTO @Size(min=3))
         mvc.perform(put("/api/v1/users/me")
                         .header("Authorization", "Bearer " + t)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -384,20 +365,18 @@ class ApiFlowTest {
                                 """))
                 .andExpect(status().isBadRequest());
 
-        // heç nə dəyişmədi — hələ də köhnə parolla girir
         loginAs("tester@wildcard.test", "Test12345");
     }
 
-    /** PUT /users/me — nick + email + parol dəyişir; email yalnız öz cavabda; yeni parol işləyir. */
     @Test
     void updateProfileChangesUsernameEmailAndPassword() throws Exception {
-        String unique = String.valueOf(System.nanoTime()).substring(5); // sabit uzunluq
+        String unique = String.valueOf(System.nanoTime()).substring(5);
         String username = "editor" + unique;
         String email = username + "@example.com";
         String newUsername = username + "x";
         String newEmail = username + "x@example.com";
 
-        // bu test üçün ayrı istifadəçi — "tester" digər testlərdə işlənir, toxunmuruq
+        // dedicated user for this test - "tester" is used by the other tests
         mvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -406,12 +385,10 @@ class ApiFlowTest {
                 .andExpect(status().isOk());
         String t = loginAs(email, "Test12345");
 
-        // email yalnız öz /users/me cavabındadır
         mvc.perform(get("/api/v1/users/me").header("Authorization", "Bearer " + t))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.email").value(email));
 
-        // tam dəyişiklik: nick + email + parol (cari parol ilə)
         mvc.perform(put("/api/v1/users/me")
                         .header("Authorization", "Bearer " + t)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -424,7 +401,6 @@ class ApiFlowTest {
                 .andExpect(jsonPath("$.data.email").value(newEmail))
                 .andExpect(jsonPath("$.data.bio").value("edited by test"));
 
-        // köhnə parol artıq işləmir, yenisi işləyir
         mvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

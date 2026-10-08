@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
     return raw ? JSON.parse(raw) : null
   })
 
-  // səhifə yenilənəndə də canlı bağlantı qurulur (token localStorage-dadır)
+  // the live connection is also built on page reload (the token is in localStorage)
   useEffect(() => {
     if (localStorage.getItem('wc_token')) startRealtime()
     return () => stopRealtime()

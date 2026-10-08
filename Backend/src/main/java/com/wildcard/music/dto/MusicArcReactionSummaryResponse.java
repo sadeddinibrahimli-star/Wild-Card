@@ -18,8 +18,8 @@ public class MusicArcReactionSummaryResponse {
 
     private Long arcId;
     private Integer total;
-    /** FIRE -> 3, HEART -> 1 ... */
+    /** FIRE -> 3, HEART -> 1, ... */
     private Map<ReactionType, Integer> counts;
-    /** Bu istifadəçinin öz reaksiyası (yokdursa null). */
+    /** This user's own reaction (null when there is none). */
     private ReactionType myReaction;
 }

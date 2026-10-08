@@ -19,9 +19,7 @@ public class MusicCheckInResponse {
     private String trackName;
     private String artist;
     private LocalDate date;
-    /** Bu gün artıq check-in olunubsa true. */
     private boolean alreadyCheckedIn;
-    /** Ardıcı gün sayı (bugündən geriyə). */
     private int streakDays;
     private Integer totalCheckIns;
     private String message;

@@ -14,20 +14,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * LOKAL e-poçt qutusu.
+ * LOCAL mailbox for development.
  *
- * SMTP qurulmayanda parol sıfırlama linki heç bir yerə çatmır - səhifə
- * "link göndərildi" deyir, amma istifadəçi linki görmür. Bu qutu həll edir:
- * backend hər mesajı diskə yazır və `GET /api/v1/dev/mailbox` onu qaytarır.
+ * Without SMTP the password reset link never arrives: the page says
+ * "link sent" but the user cannot see it. This fixes it:
+ * the backend writes every message to disk and
+ * `GET /api/v1/dev/mailbox` returns them.
  *
- * YALNIZ dev/docker profilində işləyir (enabled=... yml-dən). İstehsalda
- * enabled=false olur və heç nə yazılmır.
+ * Only active in the dev/docker profile (enabled=... in yml). In production
+ * enabled=false and nothing is written.
  */
 @Slf4j
 @Configuration
 public class DevMailbox {
 
-    /** Son neçə mesaj saxlanılır. */
     private static final int MAX_MAILS = 20;
 
     private final boolean enabled;
@@ -46,7 +46,6 @@ public class DevMailbox {
         return enabled;
     }
 
-    /** SMTP göndərə bilmədiyimizdə mesajı bura yazırıq. */
     public void save(String to, String subject, String body) {
         if (!enabled) {
             return;
@@ -68,7 +67,6 @@ public class DevMailbox {
             existing.removeIf(String::isBlank);
             existing.add(toJson(mail));
 
-            // yalnız son MAX_MAILS
             while (existing.size() > MAX_MAILS) {
                 existing.remove(0);
             }
@@ -94,7 +92,6 @@ public class DevMailbox {
         } catch (IOException e) {
             log.warn("Dev mailbox read failed: {}", e.getMessage());
         }
-        // ən yenisi əvvəldə
         java.util.Collections.reverse(out);
         return out;
     }
@@ -105,11 +102,10 @@ public class DevMailbox {
                 Files.delete(file);
             }
         } catch (IOException ignored) {
-            // no-op
         }
     }
 
-    // kifayət qədər sadə JSON (Dependency-free)
+    // minimal hand-rolled JSON writer (dependency-free)
     private String toJson(Map<String, String> m) {
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
@@ -143,7 +139,6 @@ public class DevMailbox {
                     inValue = true;
                 }
             } else if (c == ':' && !inValue) {
-                // ayırıcı
             } else if (inValue) {
                 value.append(c);
             } else {

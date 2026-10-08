@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponse {
-    private int status;      // 400, 404, 500
-    private String error;    // "Bad Request", "Not Found"
-    private String message;  // istifadəçiyə göstərilən səbəb
+    private int status;
+    private String error;
+    private String message;  // user-facing reason shown to the client
     private LocalDateTime timestamp;
 
     public static ErrorResponse of(int status, String error, String message) {

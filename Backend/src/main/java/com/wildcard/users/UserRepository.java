@@ -20,10 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByAccountStatus(AccountStatus accountStatus);
     long countByAccountStatus(AccountStatus accountStatus);
 
-    /** Son 24 saatda aktiv olmus istifadeci sayi (hesab statusu deyil, REAL aktivlik). */
+    /** Users active in the last 24 hours (REAL activity, not the account status). */
     long countByLastActiveAtAfter(java.time.Instant since);
 
-    /** Admin panel: son 24 saatda aktif + hesab statusu ile birlikde. */
     @org.springframework.data.jpa.repository.Query("""
             select count(u) from User u
             where u.lastActiveAt >= :since
@@ -34,8 +33,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /**
-     * Admin axtarisi - filtr bazada olur (Java-da süzəndə səhifələmə
-     * problemi yaranır: 20-ci səhifədəki istifadəçi tapılmırdı).
+     * Admin search - the filtering happens in the database (filtering in Java
+     * breaks pagination: users on page 20 were never found).
      */
     @org.springframework.data.jpa.repository.Query("""
             select u from User u
@@ -54,9 +53,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Page<User> findByUsernameContainingIgnoreCaseOrderByCreatedAtDesc(String username, Pageable pageable);
 
-    /**
-     * Discover: aktiv istifadəcilər, cavanlar əvvəl.
-     */
+    /** Discover: active users, youngest first. */
     @org.springframework.data.jpa.repository.Query("""
             select u from User u
             where u.id <> :excludeId

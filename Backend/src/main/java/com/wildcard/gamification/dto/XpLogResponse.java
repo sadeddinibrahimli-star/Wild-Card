@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * Doc 4.3: "View own XP history".
- * Hər sətir XpLog-dakı dəyişməz yazıdır - istifadəçi XP-ni yalnız
- * buradan oxuyur, heç vaxt düzəldə bilmir (doc 11).
+ * One line of the XP history (doc 4.3). Every row is an immutable entry
+ * from XpLog - XP can only be read here, never edited (doc 11).
  */
 @Data
 @Builder

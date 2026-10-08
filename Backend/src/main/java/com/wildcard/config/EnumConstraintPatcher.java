@@ -13,18 +13,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ddl-auto=update yeni sütun və cədvəl əlavə edir, amma Hibernate-in
- * enum sütunları üçün yaratdığı CHECK constraint-ləri YENİLƏMİR.
- * Yeni enum dəyəri əlavə olunanda köhnə constraint-i yeni dəyəri bloklayır.
+ * ddl-auto=update adds new tables and columns but does NOT refresh the
+ * CHECK constraints Hibernate creates for enum columns. When a new enum
+ * value is added, the old constraint blocks it.
  *
- * Java enum-lar həqiqi mənbə olduğu üçün bu artefakt constraint-lər
- * start-da düşürülür.
+ * Java enums are the source of truth, so these artifact constraints
+ * are dropped at startup.
  */
 @Slf4j
 @Component
 public class EnumConstraintPatcher {
 
-    /** enum -> postgres dəyər kimi saxlanılan sütunlar. */
+    /** Columns Hibernate stores as postgres enum values. */
     private static final List<String> ENUM_TABLES = List.of(
             "notifications", "xp_log", "xp_config", "watchlist_item",
             "posts", "topics", "reactions", "reports", "users", "conversations");
@@ -36,9 +36,9 @@ public class EnumConstraintPatcher {
     }
 
     /**
-     * ddl-auto=update şemanı EMF yarandıqda ixrac edir; enum dəyəri əlavə
-     * olunanda KÖHNƏ constraint-i yenidən yaradır. ona görə start-dan
-     * bir az sonra yenidən yoxlayıb düşürürük.
+     * ddl-auto=update exports the schema when the EMF is created and recreates
+     * the OLD constraint when an enum value is added, so we check again a bit
+     * after startup and drop it.
      */
     private static final int MAX_PASSES = 40;
 
@@ -47,9 +47,9 @@ public class EnumConstraintPatcher {
 
     @Scheduled(initialDelay = 3_000, fixedDelay = 2_000)
     public void dropStaleConstraints() {
-        // ddl-auto=update şemanı bir neçə dəfə ixrac edir; ilk bir neçə dəqiqə
-        // təkrar-təkrar yoxlayıb yeni enum dəyərlərini bloklayan constraint-ləri
-        // silirik. Sabit saydan sonra dayanır.
+        // ddl-auto=update exports the schema several times; for the first few
+        // minutes we keep checking for constraints that block new enum values,
+        // then stop after a fixed number of attempts.
         if (passes.getAndIncrement() > MAX_PASSES) {
             return;
         }
@@ -91,12 +91,10 @@ public class EnumConstraintPatcher {
         return out;
     }
 
-    /** "table::constraint" formatını cədvəl adını götürür. */
     private String tableOf(String packed) {
         return packed.substring(0, packed.indexOf("::"));
     }
 
-    /** "table::constraint" formatını constraint adını götürür. */
     private String constraintOf(String packed) {
         return packed.substring(packed.indexOf("::") + 1);
     }

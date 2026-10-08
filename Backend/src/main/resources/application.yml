@@ -1,18 +1,17 @@
-# Əsas fayl. Burada yalnız "hansı profili işə sal" seçimi var.
-# Profilin özü application-dev.yml faylında yazılır.
+# Main file. It only decides which profile to activate.
+# The profile itself lives in application-dev.yml.
 
 spring:
   application:
     name: wild-card
 
-  # "dev" profili işə düşür -> Spring application-dev.yml faylını avtomatik oxuyur.
-  # Production-da bu sətri "prod" etmək bəsdir, kod dəyişməz.
+  # activating the "dev" profile -> Spring automatically reads application-dev.yml.
+  # In production changing this line to "prod" is enough, no code change.
   profiles:
     active: dev
 
   servlet:
     multipart:
-      # 2 MB fayl limiti
       max-file-size: 2MB
       max-request-size: 4MB
 

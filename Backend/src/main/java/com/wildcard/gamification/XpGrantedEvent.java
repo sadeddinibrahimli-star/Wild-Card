@@ -3,9 +3,9 @@ package com.wildcard.gamification;
 import com.wildcard.users.User;
 
 /**
- * XP yazıldıqdan sonra yayılır. AchievementService bunu dinləyir;
- * beləliklə XpService -> AchievementService asılılığı olmur və
- * dairəvi dependency yaranmır.
+ * Published after XP has been written. AchievementService listens for it,
+ * so there is no XpService -> AchievementService dependency and
+ * no circular dependency.
  */
 public record XpGrantedEvent(User user, int levelBefore, int levelAfter) {
 

@@ -22,8 +22,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * MusicArc-a qoyulan reaksiya (post reaksiyalarından ayrı).
- * Unikal (arc_id, user_id) -> hər istifadəçi bir reaksiya.
+ * A reaction on a MusicArc (separate from post reactions).
+ * Unique (arc_id, user_id) -> one reaction per user.
  */
 @Entity
 @Table(name = "music_arc_reactions",

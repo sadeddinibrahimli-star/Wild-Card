@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * İlk admin hesabının yaradılması.
+ * Creates the first admin account.
  *
- * QAYDALAR (təhlükəsizlik):
- *  - parol HEÇ VAXT kodda yazılmır; yalnız env-dən gəlir
- *  - parol boş və ya çox qısa olanda dayanır (tətbiq işləməz)
- *  - eyni e-poçt artıq varsa toxunmur (təkrar seed etmir)
- *  - parol loga YAZILMIR, e-poçt yazılır
+ * Security rules:
+ *  - the password is NEVER hardcoded, it only comes from the environment
+ *  - the app stops if the password is empty or too short
+ *  - an existing email is left untouched (no re-seed)
+ *  - the password is never logged, only the email is
  */
 @Slf4j
 @Configuration
@@ -50,7 +50,6 @@ public class DataSeeder {
                                 + "Set ADMIN_EMAIL in the environment or set wildcard.admin.enabled=false.");
             }
             if (password.length() < MIN_PASSWORD_LENGTH) {
-                // parolun özü qeydə alınmır - yalnız uzunluq problemi bildirilir
                 throw new IllegalStateException(
                         "ADMIN_PASSWORD must be at least " + MIN_PASSWORD_LENGTH
                                 + " characters (got " + password.length() + "). "

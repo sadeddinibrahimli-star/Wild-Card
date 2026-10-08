@@ -67,7 +67,7 @@ public class Post {
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 
-    /** Moderasiya tərəfindən gizlədilib (soft-delete yox, məzmun bazada qalır). */
+    /** Hidden by moderation (not a soft-delete - the content stays in the database). */
     @Column(name = "hidden_by_moderation", nullable = false)
     private boolean hiddenByModeration = false;
 

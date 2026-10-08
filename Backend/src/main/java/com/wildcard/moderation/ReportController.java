@@ -95,8 +95,6 @@ public class ReportController {
         return ApiResponse.success(reportService.flaggedContentFor(userId, PageRequest.of(page, size)));
     }
 
-    // ---------- məzmunu gizlətmə / silmə ----------
-
     @PatchMapping("/moderation/posts/{postId}/hide")
     public ApiResponse<ModerationActionResponse> hidePost(
             @PathVariable Long postId,

@@ -44,15 +44,15 @@ public class ReactionService {
                 .orElse(null);
 
         if (reaction != null && reaction.getType() == type) {
-            // eyni tipə ikinci basma = geri götür
+            // pressing the same type a second time = undo
             reactionRepository.delete(reaction);
             topicAffinityService.registerReaction(current, post);
         } else if (reaction != null) {
             reaction.setType(type);
             reactionRepository.save(reaction);
 
-            // reaction type change olunanda da movzu cekisi artir
-            // (her eylem istifadecinin maraqini gosterir)
+            // changing the reaction type also raises the topic weight
+            // (every action shows the user's interest)
             topicAffinityService.registerReaction(current, post);
         } else {
             reactionRepository.save(Reaction.builder()

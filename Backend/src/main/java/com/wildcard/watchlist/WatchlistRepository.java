@@ -30,7 +30,7 @@ public interface WatchlistRepository extends JpaRepository<WatchlistItem, Long> 
     double averageRating(@Param("userId") Long userId);
 
 
-    /** review/notes yazilmis item sayi (LORE MASTER). */
+    /** Number of items that have a review/notes (LORE MASTER). */
     @Query("select count(w) from WatchlistItem w where w.user.id = :userId " +
            "and w.notes is not null and trim(w.notes) <> ''")
     long countReviewed(@Param("userId") Long userId);

@@ -207,8 +207,8 @@ public class ReportService {
     }
 
     /**
-     * Mesaji moderasiya ile gizletmek (soft).
-     * Məzmun bazada qalır - geri qaytarmaq mümkündür.
+     * Hide the content through moderation (soft).
+     * The content stays in the database and can be restored.
      */
     @Transactional
     public ModerationActionResponse hidePost(Long postId, boolean hide, Long moderatorId) {
@@ -226,7 +226,7 @@ public class ReportService {
                 .build();
     }
 
-    /** Mesaji silmek (soft-delete). */
+    /** Delete the content (soft-delete). */
     @Transactional
     public ModerationActionResponse removePost(Long postId, Long moderatorId) {
         Post post = postRepository.findById(postId)

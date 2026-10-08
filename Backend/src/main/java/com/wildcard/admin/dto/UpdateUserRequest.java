@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Admin tərəfindən hesabın redaktəsi (doc 4.1: "update ... user accounts").
- * Null olan sahə DƏYİŞMİR.
+ * Admin edits an account.
+ * Every field is optional: a null field is not changed.
  */
 @Data
 @NoArgsConstructor
@@ -32,10 +32,8 @@ public class UpdateUserRequest {
 
     private AccountStatus accountStatus;
 
-    /** Yeni parol təyin etmək üçün (boşdursa dəyişmir). */
     @Size(min = 8, max = 100)
     private String password;
 
-    /** Onboarding vəziyyətini sıfırlamaq. */
     private Boolean onboarded;
 }

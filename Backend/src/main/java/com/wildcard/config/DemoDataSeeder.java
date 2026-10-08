@@ -26,11 +26,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Lokal demo məlumatı.
+ * Local demo data.
  *
- * YALNIZ SEED_ENABLED=true və boş bazada işləyir.
- * Heç bir parol koda yazılmır - ENV-dən gəlir.
- * İstehsal mühitində söndürülmüş qalır.
+ * Runs only when SEED_ENABLED=true and the database is empty.
+ * No password is hardcoded - it comes from ENV.
+ * Stays disabled in production.
  */
 @Slf4j
 @Configuration

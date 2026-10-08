@@ -35,8 +35,9 @@ public class TopicAffinityService {
     private double explicitScore;
 
     /**
-     * Poçta reaksiyа verəndə mövzu çəkisi artır.
-     * Hər reaksiyada +reactionWeight. threshold-a çatanda "bəyənilmiş mövzu" sayılır.
+     * Reacting to a post raises the topic weight.
+     * +reactionWeight per reaction; once the threshold is reached the topic
+     * counts as "liked".
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void registerReaction(User user, Post post) {
@@ -63,7 +64,6 @@ public class TopicAffinityService {
         }
     }
 
-    /** İstifadəçi mövzuları özü seçir (settings). */
     @Transactional
     public List<TopicResponse> setExplicitTopics(User user, List<Long> topicIds) {
         Set<Long> wanted = topicIds == null
@@ -93,7 +93,7 @@ public class TopicAffinityService {
             affinityRepository.save(affinity);
         }
 
-        // secim edildi -> onboarding tamamlandi
+        // a selection was made -> onboarding is complete
         user.setOnboarded(true);
         userRepository.save(user);
 
@@ -114,7 +114,7 @@ public class TopicAffinityService {
                 .toList();
     }
 
-    /** Hansı mövzular "bəyənilmiş" sayılır (çəkisi həddi keçən). */
+    /** Which topics count as "liked" (weight above the threshold). */
     @Transactional(readOnly = true)
     public Set<Long> likedTopicIds(Long userId) {
         Set<Long> liked = new LinkedHashSet<>();
@@ -127,7 +127,7 @@ public class TopicAffinityService {
         return liked;
     }
 
-    /** Kategoriya səviyyəsində çəki (topic yoxdursa). */
+    /** Category-level weight used when there is no topic. */
     @Transactional(readOnly = true)
     public Map<Category, Double> categoryAffinity(Long userId) {
         Map<Category, Double> map = new HashMap<>();

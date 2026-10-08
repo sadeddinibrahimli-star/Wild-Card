@@ -9,9 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Admin tərəfindən hesab yaradılması (doc 4.1: "Create ... user accounts").
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

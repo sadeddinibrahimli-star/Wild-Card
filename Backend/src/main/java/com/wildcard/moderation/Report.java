@@ -40,9 +40,9 @@ public class Report {
     @JoinColumn(name = "reporter_id", nullable = false)
     private User reporter;
 
-    // @OneToOne olsaydi her posta YALNIZ BIR report yazilardi:
-    // ikinci (hətta fərqli istifadəçinin) şikayəti unique constraint
-    // pozurdu -> HTTP 500. Şikayətlər çox ola bilər.
+    // Not @OneToOne: that would allow only ONE report per post -
+    // a second report (even from a different user) would break the unique
+    // constraint -> HTTP 500. Posts can be reported many times.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;

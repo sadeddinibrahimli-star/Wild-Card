@@ -1,5 +1,5 @@
-# Lokal demo ucun. `docker compose up` bu fayli oxuyur.
-# .env yaratmaq lazimdir: cp .env.example .env
+# For the local demo. `docker compose up` reads this file.
+# Create .env first: cp .env.example .env
 
 services:
 
@@ -16,7 +16,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      # backend buferi QUTMAMIS baslamasin
+      # the backend must not start before the database is ready
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
@@ -36,13 +36,13 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      # butun sirlar .env faylindan gelir (env_file yuxarida) - burada
-      # hec bir sabit deyere yazilmir
+      # all secrets come from the .env file (env_file above) -
+      # nothing is hardcoded here
       DB_HOST: db
       DB_PORT: 5432
       STORAGE_DIR: /app/uploads
     volumes:
-      # upload-lar konteyner silinende itmesin
+      # uploads must survive when the container is removed
       - uploads:/app/uploads
     ports:
       - "8080:8080"

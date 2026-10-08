@@ -33,7 +33,7 @@ public class NotificationService {
                 .build());
 
         // doc 4.3: "Receive real-time notifications" - /user/queue/alerts.
-        // Köhnə polling (5s) eyni vaxtda işləməyə davam edir.
+        // The old polling (5s) keeps running at the same time as a fallback.
         wsPush.afterCommit("/user/" + recipient.getId() + "/queue/alerts", java.util.Map.of(
                 "type", "NOTIFICATION",
                 "notificationType", type.name(),
@@ -42,12 +42,10 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    /** filter: all (default) | follows | likes */
     public PageResponse<NotificationResponse> listFor(User user, Pageable pageable) {
         return listFor(user, pageable, "all");
     }
 
-    /** filter: all | follows | likes */
     public PageResponse<NotificationResponse> listFor(User user, Pageable pageable, String filter) {
         boolean all = filter == null || filter.isBlank() || "all".equalsIgnoreCase(filter);
         var types = switch (filter == null ? "all" : filter.toLowerCase()) {

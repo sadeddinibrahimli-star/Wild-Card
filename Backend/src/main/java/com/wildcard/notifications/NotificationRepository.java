@@ -15,15 +15,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     long countByRecipientIdAndReadFalse(Long recipientId);
 
-    /** Oxunmus və köhnə bildirişləri təmizləmək üçün. */
     @Modifying
     @Query("delete from Notification n where n.read = true and n.createdAt < :cutoff")
     int deleteReadBefore(@Param("cutoff") java.time.LocalDateTime cutoff);
 
     /**
      * filter: all | follows | likes
-     *  - follows -> FOLLOW bildirişləri
-     *  - likes   -> REACTION / COMMENT bildirişləri
+     *  - follows -> FOLLOW notifications
+     *  - likes   -> REACTION / COMMENT notifications
      */
     @Query("""
             select n from Notification n

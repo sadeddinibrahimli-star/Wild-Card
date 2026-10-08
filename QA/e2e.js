@@ -1,11 +1,11 @@
 /**
  * Wild-Card browser E2E (puppeteer-core + system chromium).
  *
- * İstifadə (backend 8080 + frontend 5173 işlək olmalıdır):
+ * Usage (backend 8080 + frontend 5173 must be running):
  *   cd QA && node e2e.js
  *
- * Yoxlayır: login (wrong+right), feed tabları, post yaratma, post detail,
- * şərh, report dialog, bütün əsas route-lar, WS (/ws), alerts dropdown, logout.
+ * Checks: login (wrong+right), feed tabs, post creation, post detail,
+ * comment, report dialog, all main routes, WS (/ws), alerts dropdown, logout.
  */
 const puppeteer = require('puppeteer-core')
 
@@ -48,7 +48,7 @@ async function waitText(page, sel, text, timeout = 8000) {
   return false
 }
 
-/** React-controlled inputun bütün mətnini seçib yenisi ilə əvəz et. */
+/** Select all the text of a React-controlled input and replace it. */
 async function replaceInput(page, sel, value) {
   await page.focus(sel)
   await page.keyboard.down('Control')
@@ -58,7 +58,7 @@ async function replaceInput(page, sel, value) {
   if (value) await page.type(sel, value)
 }
 
-/** Profil başlığındakı @nick dəqiq olana qədər gözlə (substring deyil). */
+/** Wait until the @nick in the profile header matches exactly (not a substring). */
 async function waitHead(page, name, timeout = 5000) {
   const t0 = Date.now()
   while (Date.now() - t0 < timeout) {
@@ -72,7 +72,7 @@ async function waitHead(page, name, timeout = 5000) {
   return false
 }
 
-/** Selector ekranıdan yoxa çıxana qədər gözlə. */
+/** Wait until the selector disappears from the screen. */
 async function waitGone(page, sel, timeout = 8000) {
   const t0 = Date.now()
   while (Date.now() - t0 < timeout) {
@@ -89,7 +89,7 @@ async function gotoHash(page, hash, settle = 800) {
   await sleep(settle)
 }
 
-/** Overlay içində selector varmı + görünən xəta yoxdur. */
+/** Selector inside an overlay and no visible error. */
 async function overlayOk(page, probe) {
   const state = await page.evaluate((p) => {
     const ov = document.querySelector('.pane-overlay.overlay-on')
@@ -183,7 +183,7 @@ async function overlayOk(page, probe) {
   }
   let created = await waitText(page, '.pane-feed .post-title', title, 10000)
   if (!created) {
-    // bəzi sort-larda bizim post yuxarı düşməyə bilər → recency tabına keç
+    // on some sorts our post may not be at the top -> switch to the recency tab
     await page.evaluate(() => {
       const tabs = [...document.querySelectorAll('.pane-feed .tab')]
       const recency = tabs.find((t) => /recency|latest|recent/i.test(t.textContent))
@@ -285,7 +285,7 @@ async function overlayOk(page, probe) {
     check(label, ok)
   }
 
-  /* ---------------------- 10a. hər overlay-də geri düyməsi olmalıdır */
+  /* ---------------------- 10a. every overlay must have a back button */
   for (const [hash, label] of [
     ['#achievements', 'Achievements'],
     ['#compatibility?id=2', 'Compatibility'],
@@ -324,7 +324,7 @@ async function overlayOk(page, probe) {
     })
     check('Watchlist-ə title əlavə olunur', await waitText(page, '.pane-overlay.overlay-on', wlTitle, 8000))
 
-    // əlavədən sonra reytinqi dəyişmək (★ seçicisi)
+    // change the rating after adding (the ★ selector)
     const rated = await page.evaluate((t) => {
       const card = [...document.querySelectorAll('.wl-card')].find((c) =>
         (c.textContent || '').includes(t),
@@ -390,7 +390,7 @@ async function overlayOk(page, probe) {
     )
     const origName = prefill.u
 
-    // --- səhv cari parol → xəta, dialoq bağlanmır
+    // --- wrong current password -> error, dialog stays open
     await replaceInput(page, 'input[placeholder="Current password"]', 'wrong-pw-xyz')
     await replaceInput(
       page,
@@ -402,19 +402,19 @@ async function overlayOk(page, probe) {
     const wrongPwErr = await waitText(page, '.crop-modal .alert', 'Current password is incorrect', 6000)
     const stillOpen = !!(await page.$(DLG))
     check('Səhv cari parol → xəta, dəyişiklik olmur', wrongPwErr && stillOpen)
-    // şifrə sahələrini təmizlə (sonrakı save-lərə qarışmasın)
+    // clear the password fields (so they do not leak into later saves)
     await replaceInput(page, 'input[placeholder="Current password"]', '')
     await replaceInput(page, 'input[placeholder="New password (min 8, letter + number)"]', '')
     await replaceInput(page, 'input[placeholder="Repeat new password"]', '')
 
-    // --- bio dəyiş → serverdən geri gəlir
+    // --- bio change -> comes back from the server
     const newBio = `E2E edit-profile bio ${Date.now()}`
     await replaceInput(page, '#ep-bio', newBio)
     await clickSave()
     const bioSaved = await waitGone(page, DLG)
     check('Edit profile → bio yadda saxlanılır', bioSaved)
 
-    // --- username dəyiş + geri qaytar (növbəti run-lar üçün bərpa edilir)
+    // --- username change + revert (restored for the next runs)
     const newName = origName + 'e2e' + String(Date.now()).slice(-4)
     let nameFlow = await openEditDialog()
     if (nameFlow) {

@@ -62,8 +62,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * JSON parse / enum dəyər xətası (məsələn "kind":"NOT_A_KIND")
-     * 500 yox, düzgün 400 qaytarmalıdır.
+     * A JSON parse / bad enum value (e.g. "kind":"NOT_A_KIND")
+     * must be a 400, not a 500.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> unreadableBody(HttpMessageNotReadableException ex) {
@@ -83,9 +83,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Query/path parametrində səhv enum (məs. ?status=NOPE) əvvəl
-     * MethodArgumentTypeMismatchException atırdı -> tutulmayıb 500 olurdu.
-     * İndi 400 + icazə verilən dəyərlər.
+     * A bad enum in a query/path parameter (e.g. ?status=NOPE) used to raise
+     * MethodArgumentTypeMismatchException and end up as an unhandled 500.
+     * Now it is a 400 listing the allowed values.
      */
     @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(

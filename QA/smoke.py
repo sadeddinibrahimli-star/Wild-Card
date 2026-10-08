@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Wild-Card API smoke test (backend 8080 işlək olmalıdır).
+Wild-Card API smoke test (the backend must be running on 8080).
 
     cd QA && python3 smoke.py
 
-Hər yoxlama "PASS/FAIL" çap edir; sonunda cədvəl. Variantlar:
-    ADMIN_EMAIL / ADMIN_PASSWORD / BASE env dəyişdirilə bilər.
+Every check prints "PASS/FAIL" and a table at the end. Options:
+    ADMIN_EMAIL / ADMIN_PASSWORD / BASE can be overridden via env.
 """
 import os
 import sys
@@ -135,7 +135,7 @@ def main():
     r = req("PUT", "/users/me", token=admin, json_body={"bio": "smoke test bio 123"})
     expect("PUT /users/me (bio)", r, [200])
 
-    # email yalnız öz /users/me cavabındadır, publik profil sızdırmır
+    # the email only appears in the user's own /users/me response, a public profile does not leak it
     r = req("GET", "/users/me", token=user or admin)
     check("GET /users/me email qaytarır",
           bool((data_of(r) or {}).get("email")), True)
@@ -144,7 +144,7 @@ def main():
     check("Publik /users/{id} email SIZDIRMIR", pub.get("email") is None, True,
           str(pub.get("email")))
 
-    # tam profil redaktəsi: nick / email / parol (yalnız temp istifadəçi üzərində)
+    # full profile edit: nick / email / password (only on the temp user)
     if user:
         r = req("PUT", "/users/me", token=user,
                 json_body={"currentPassword": "wrong-pw-1", "newPassword": "Changed1234"})
@@ -215,7 +215,7 @@ def main():
     for sort in ("RECENCY", "latest"):
         r = req("GET", "/home/feed", token=admin, params={"sort": sort})
         expect(f"GET /home/feed?sort={sort}", r, [200])
-    # enum doğrulaması /feed-dədir (FeedSort.from → 400)
+    # the enum validation lives on /feed (FeedSort.from -> 400)
     r = req("GET", "/feed", token=admin, params={"sort": "latest"})
     expect("GET /feed?sort=latest", r, [200])
     for sort in ("top", "bogus"):
@@ -248,17 +248,17 @@ def main():
         comment = data_of(r) or {}
         comment_id = comment.get("id")
         if comment_id:
-            # əvvəlcə başqası silməyə cəhd edir (4xx), sonra sahibi silir
+            # first someone else tries to delete (4xx), then the owner deletes
             if user:
                 r = req("DELETE", f"/comments/{comment_id}", token=user)
                 expect("Başqasının şərhini silmək → 4xx", r, [400, 403])
-            # şərh adminə məxsusdur → yalnız öz sahibi silə bilər
+            # the comment belongs to its author - only the owner can delete it
             r = req("DELETE", f"/comments/{comment_id}", token=admin)
             expect("DELETE /comments/{id} (öz şərhi)", r, [200, 204])
         else:
             skip("DELETE /comments/{id}", "comment id yoxdur")
 
-        # qaydalar: öz post-a reaksiya qadağandır, başqasının post-una icazəli
+        # rules: reacting to your own post is forbidden, to someone else's is allowed
         if user:
             r = req("PUT", f"/posts/{post_id}/reaction", token=user,
                     json_body={"type": "FIRE"})
@@ -407,12 +407,12 @@ def main():
         expect("POST /reports (başqasının post-u)", r, [200, 201])
         rep = data_of(r) or {}
         report_id = rep.get("id")
-        # öz post-unu report etmək qadağandır
+        # reporting your own post is forbidden
         my_post = req("POST", "/posts", token=user,
                       json_body={"category": "GAMING", "title": f"Temp post {_ts}",
                                  "body": "for own-report negative test"})
         my_post_id = (data_of(my_post) or {}).get("id")
-        # backend öz post-un report-unu qəbul edir (test bu davranışı sabitləşdirir)
+        # the backend accepts a report on your own post (the test pins this behaviour)
         if my_post_id:
             r = req("POST", "/reports", token=user,
                     json_body={"postId": my_post_id, "reason": "Spam"})
@@ -480,7 +480,7 @@ def main():
     spare = data_of(r) or {}
     spare_id = spare.get("id")
     if spare_id:
-        # rolu öz dəyərinə qaytarırıq (enum-dan asılı deyil)
+        # restore the role to its own value (independent of the enum)
         role = spare.get("role") or "USER"
         r = req("PATCH", f"/admin/users/{spare_id}/role", token=admin,
                 params={"role": role})
@@ -506,7 +506,7 @@ def main():
     else:
         skip("PUT /admin/xp-config/{action}", "config boş")
 
-    # ---------------------------------------------------------- search (xarici API-lar)
+    # ---------------------------------------------------------- search (external APIs)
     r = req("GET", "/search/titles/status", token=admin)
     expect("GET /search/titles/status (lokal)", r, [200])
     r = req("GET", "/search/titles", token=admin, params={"q": "naruto", "type": "ANIME"})

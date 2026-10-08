@@ -1,13 +1,13 @@
 /**
- * Wild-Card STOMP/WebSocket probe (backend 8080 işlək olmalıdır).
+ * Wild-Card STOMP/WebSocket probe (the backend must run on 8080).
  *
  *   cd QA && node wsprobe.js
  *
- * Yoxlayır (doc 4.3 real-time bildirişlər):
- *   1. JWT ilə CONNECT → CONNECTED (user-name)
- *   2. Kiçik hərf `authorization` header da işləyir (halef header fix)
- *   3. Token-suz / düzgün olmayan token → bağlantı rədd edilir
- *   4. /user/queue/alerts aboneliyi → follow bildirişi real vaxtda çatır
+ * Checks (doc 4.3 real-time notifications):
+ *   1. CONNECT with JWT -> CONNECTED (user-name)
+ *   2. a lower case `authorization` header also works (header fix)
+ *   3. no / wrong token -> the connection is rejected
+ *   4. /user/queue/alerts subscription -> a follow notification arrives live
  */
 const WebSocket = require('ws')
 
@@ -48,7 +48,7 @@ function stompConnectFrame(authHeader) {
   )
 }
 
-/** WS + STOMP CONNECT; hadisələri Promise ilə gözləyir. */
+/** WS + STOMP CONNECT; waits for the events with a Promise. */
 function openStomp(headers, { subscribeAlerts = false } = {}) {
   return new Promise((resolve) => {
     const ws = new WebSocket(WS_URL, { headers })
@@ -69,7 +69,7 @@ function openStomp(headers, { subscribeAlerts = false } = {}) {
         state.connected = true
         if (subscribeAlerts) {
           ws.send('SUBSCRIBE\nid:sub-1\ndestination:/user/queue/alerts\n\n\0')
-          resolve(state) // abunəlik göndərildi → davam et
+          resolve(state) // subscription sent -> continue
           state.done = true
           clearTimeout(timer)
         } else {
@@ -154,11 +154,11 @@ async function main() {
     s = await openStomp({ Authorization: 'Bearer ' + adminToken }, { subscribeAlerts: true })
     check('/user/queue/alerts SUBSCRIBE göndərildi', s.connected, s.error || '')
     if (s.connected) {
-      // temp admin-i follow edir → backend commit sonrası push etməlidir
+      // follow the temp admin -> the backend must push after the commit
       const r = await api('POST', `/social/follow/${adminId}`, tempToken)
       check('Temp admin-i follow etdi (push tetikləyir)', [200, 201, 204].includes(r.status),
             'status=' + r.status)
-      // çatmağı gözlə (ən çox 6s)
+      // wait for delivery (max 6s)
       const t0 = Date.now()
       while (Date.now() - t0 < 6000 && s.alerts.length === 0) await sleep(200)
       check('Bildiriş real vaxtda çatdı (FOLLOW)', s.alerts.length > 0,

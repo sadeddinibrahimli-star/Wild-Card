@@ -29,7 +29,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ApiResponse<UserProfileResponse> me() {
-        // email yalnız öz cavabda (publik profil emaili sızdırmır)
+        // the email only appears in the user's own response (a public profile does not leak it)
         return ApiResponse.success(userService.getMyProfile(SecurityUtils.getCurrentUser().getId()));
     }
 

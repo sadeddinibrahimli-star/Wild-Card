@@ -38,8 +38,9 @@ public class UserService {
         return toResponse(getEntityById(id));
     }
     /**
-     * PUT /users/me — bio/avatar + username/email/parol dəyişikliyi.
-     * Null olan sahə dəyişmir; parol üçün currentPassword tələb olunur.
+     * PUT /users/me - bio/avatar + username/email/password changes.
+     * Null fields are not changed; changing the password requires
+     * currentPassword.
      */
     @Transactional
     public UserProfileResponse updateProfile(Long id, UpdateProfileRequest request) {
@@ -54,7 +55,6 @@ public class UserService {
             user.setAvatarUrl(request.getAvatarUrl());
         }
 
-        // istifadəçi adı
         if (request.getUsername() != null) {
             String username = request.getUsername().trim();
             if (username.length() < 3) {
@@ -66,7 +66,6 @@ public class UserService {
             user.setUsername(username);
         }
 
-        // e-poçt
         if (request.getEmail() != null) {
             String email = request.getEmail().toLowerCase().trim();
             if (!email.equals(user.getEmail()) && userRepository.existsByEmail(email)) {
@@ -75,7 +74,6 @@ public class UserService {
             user.setEmail(email);
         }
 
-        // yeni parol — yalnız cari parol düzgündürsə
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
             if (request.getCurrentPassword() == null
                     || !passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
@@ -89,7 +87,7 @@ public class UserService {
         return response;
     }
 
-    /** GET /users/me — email yalnız öz profil cavabına əlavə olunur (publik profil sızdırmır). */
+    /** GET /users/me - the email is only added to the user's own profile response (a public profile never gets it). */
     @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(Long id) {
         User user = getEntityById(id);
@@ -122,7 +120,6 @@ public class UserService {
                 .build();
     }
 
-    /** GET /users/{id}/card */
     @Transactional(readOnly = true)
     public UserCardResponse card(Long id) {
         User user = userRepository.findById(id)
@@ -165,8 +162,8 @@ public class UserService {
     }
 
     /**
-     * Discover: follow etmədiyimiz, aktiv istifadəçilər.
-     * "reason" frontend ilə göstərilən kiçik izahdır.
+     * Discover: active users the user does not follow.
+     * "reason" is the short explanation shown by the frontend.
      */
     @Transactional(readOnly = true)
     public PageResponse<DiscoverUserResponse> discover(Pageable pageable) {
@@ -207,8 +204,8 @@ public class UserService {
     }
 
     /**
-     * Admin axtarisi: söz, hesab statusu və rola görə süzəcək.
-     * Boş dəyər = həmin meyara görə süzməyən.
+     * Admin search: filters by text, account status and role.
+     * An empty value means "do not filter by this criterion".
      */
     @Transactional(readOnly = true)
     public PageResponse<UserProfileResponse> adminSearch(String search,

@@ -1,11 +1,8 @@
-# "prod" profili = istehsal.
-#
-# Bu profilde heç bir SIR default deyərə malik deyil.
-# Env dəyişəni yoxdursa tətbiq AÇILMAQDA dayanır - susmaya yol verilmir.
-#
-#   DB_PASSWORD / JWT_SECRET / ADMIN_PASSWORD  ->  məcburidir
-#
-# necə işə salınır:
+# "prod" profile = production.
+# No secret in this profile has a default value.
+# If an env variable is missing the application FAILS TO START - silence is not allowed.
+#   DB_PASSWORD / JWT_SECRET / ADMIN_PASSWORD  ->  mandatory
+# how to start:
 #   export SPRING_PROFILES_ACTIVE=prod
 #   export DB_PASSWORD=...  JWT_SECRET=...  ADMIN_PASSWORD=...
 #   java -jar app.jar
@@ -19,8 +16,8 @@ spring:
 
   jpa:
     hibernate:
-      # istehsalda ddl-auto "update" OLMAZ - sxemi kodla idarə olunur.
-      # "validate" dəyişiklikləri yoxlayır, heç nə yaratmır.
+      # ddl-auto "update" is NOT allowed in production - the schema is managed by code.
+      # "validate" checks the changes and creates nothing.
       ddl-auto: validate
     open-in-view: false
 
@@ -33,7 +30,7 @@ server:
   port: ${SERVER_PORT:8080}
   forward-headers-strategy: framework
   error:
-    # stack trace istifadəçiyə göstərilmir
+    # stack traces are never shown to the user
     include-stacktrace: never
     include-message: never
 
@@ -45,31 +42,31 @@ springdoc:
 
 wildcard:
   jwt:
-    # ⚠️  MƏCBURİDİR. 32+ simvol. Dayanma deyil - tətbiq açılmır.
+    # REQUIRED. 32+ characters. Not a warning - the app will not start.
     secret: ${JWT_SECRET}
     issuer: wild-card
     access-token-expiration-minutes: ${JWT_ACCESS_MINUTES:30}
     refresh-token-expiration-days: ${JWT_REFRESH_DAYS:14}
 
   admin:
-    # İlk admin hesabı. Parol MƏCBURİDİR.
+    # First admin account. The password is REQUIRED.
     enabled: ${ADMIN_SEED_ENABLED:false}
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
 
   seed:
-    # istehsalda demo məlumatı söndürülür
+    # demo data is disabled in production
     enabled: false
     user-password: ""
 
-  # Forgot-password linki: {frontend-url}/#reset/{token}
+  # Forgot-password link: {frontend-url}/#reset/{token}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   require-secrets: true
 
   storage:
     local-dir: ${STORAGE_DIR:./uploads}
 
-  # istəhsalda poçt qutusu SÖNDÜRÜLÜR
+  # the mailbox is disabled in production
   dev-mailbox:
     enabled: false
     file: ""
@@ -93,4 +90,4 @@ logging:
   level:
     root: INFO
     com.wildcard: INFO
-  # heç bir sır loga yazılmır
+  # no secret is ever written to the log

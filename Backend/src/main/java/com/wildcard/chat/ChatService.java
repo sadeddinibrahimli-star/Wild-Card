@@ -166,10 +166,8 @@ public class ChatService {
                 .readAt(null)
                 .build();
 
-        // doc 4.3 / 6: canlı chat - açıq söhbət anında yenilənir
         wsPush.afterCommit("/topic/chat/" + conversationId, response);
 
-        // digər üzvlərə alert (onların brauzeri açıqdırsa wc:alerts işə düşür)
         memberRepository.findAll().stream()
                 .filter(member -> member.getConversation().getId().equals(conversationId))
                 .filter(member -> !member.isHasLeft())
@@ -186,7 +184,6 @@ public class ChatService {
     public PageResponse<ChatMessageResponse> messages(User current, Long conversationId, Pageable pageable) {
         requireMember(current, conversationId);
 
-        // mesajlar acilan kimi oxunmus isare olunur
         messageRepository.markRead(conversationId, current.getId(), LocalDateTime.now());
 
         return PageResponse.from(
@@ -236,7 +233,6 @@ public class ChatService {
         return PageRequest.of(0, 1);
     }
 
-    /** Spec: PUT /chat/{id}/read - oxunmuş işarələyir, qalan oxunmamış sayını qaytarır. */
     @Transactional
     public long markRead(User current, Long conversationId) {
         requireMember(current, conversationId);

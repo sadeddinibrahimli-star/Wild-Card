@@ -1,6 +1,6 @@
 package com.wildcard.achievements;
 
-/** 12 badge-in tərifi. Backend qaydası olmayanlar {@code available=false} qalır. */
+/** Definitions of the 12 badges. Definitions the backend has no rule for yet stay at {@code available=false}. */
 public enum AchievementDefinition {
 
     FIRST_BLOOD("First Blood", "Write your first post", RarityTier.COMMON, "feather", true),

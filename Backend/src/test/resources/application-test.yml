@@ -13,7 +13,7 @@ spring:
       enabled: false
 
 wildcard:
-  # doc 4.1 testleri ucun admin hesabi seed olunur
+  # admin account seeded for the doc 4.1 admin tests
   admin:
     enabled: true
     email: admin@wildcard.com

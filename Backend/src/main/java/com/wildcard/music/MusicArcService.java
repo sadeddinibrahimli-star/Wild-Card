@@ -46,7 +46,6 @@ public class MusicArcService {
         if (arc == null) {
             return null;
         }
-        // spec: streakDays /music/current cavabında olmalıdır
         long[] stats = engagementService.checkInStats(user.getId());
         MusicArcResponse out = toResponse(arc);
         out.setStreakDays((int) stats[0]);

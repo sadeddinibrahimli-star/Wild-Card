@@ -28,7 +28,7 @@ public class SecurityConfig {
             "/h2-console/**",
             "/files/**",
             "/uploads/**",
-            // STOMP handshake - token CONNECT çərçivəsində yoxlanılır
+            // STOMP handshake - the token is checked inside the CONNECT frame
             "/ws",
             "/ws/**"
     };

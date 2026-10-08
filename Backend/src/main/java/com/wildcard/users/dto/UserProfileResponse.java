@@ -18,7 +18,7 @@ public class UserProfileResponse {
     private String avatarUrl;
     private String bio;
 
-    /** Yalnız öz profil cavabında doldurulur (GET/PUT /users/me) — publik profildə null. */
+    /** Only filled in the user's own profile response (GET/PUT /users/me) - null on a public profile. */
     private String email;
 
     private String role;

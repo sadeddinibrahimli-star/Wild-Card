@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Doc 4.1 Administration — hesabın yaradılması, redaktəsi, suspend/reactivate.
+ * Account creation, editing, suspend/reactivate (doc 4.1 Administration).
  *
- * Qaydalar:
- *  - admin öz hesabını suspend edə bilmər (özünü kilidləməsin)
- *  - sonuncu aktiv admin-in rolu/statusu dəyişdirilə bilmər
- *  - e-poçt və username unikal qalır
+ * Rules:
+ *  - an admin cannot suspend their own account (no self-lockout)
+ *  - the role/status of the last active admin cannot be changed
+ *  - email and username stay unique
  */
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,6 @@ public class AdminUserService {
     private final CardService cardService;
     private final PasswordEncoder passwordEncoder;
 
-    /** Doc 4.1: "Create ... user accounts" */
     @Transactional
     public UserProfileResponse create(CreateUserRequest request) {
         String email = request.getEmail().toLowerCase().trim();
@@ -58,7 +57,7 @@ public class AdminUserService {
         return userService.toResponse(userRepository.save(user));
     }
 
-    /** Doc 4.1: "update ... user accounts" — null olan sahə dəyişmir. */
+    /** Null fields are left unchanged. */
     @Transactional
     public UserProfileResponse update(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
@@ -103,12 +102,12 @@ public class AdminUserService {
         }
 
         User saved = userRepository.save(user);
-        // rol dəyişəndə statistikalar (ani/gam/mus/cha) köhnə ola bilər
+        // stats (ani/gam/mus/cha) can be stale after a role change
         cardService.recompute(saved);
         return userService.toResponse(saved);
     }
 
-    /** Doc 4.1: "suspend, and reactivate". RESTRICTED yalnız post yazmağı bağlayır. */
+    /** Suspend/reactivate. RESTRICTED only blocks creating posts. */
     @Transactional
     public UserProfileResponse changeStatus(Long actorId, Long userId, AccountStatus status) {
         User target = userRepository.findById(userId)
@@ -128,7 +127,6 @@ public class AdminUserService {
         return userService.toResponse(saved);
     }
 
-    /** Sonuncu aktiv admin itibindən rol/status dəyişməyə imkan vermir. */
     private void guardLastAdmin(User user, Role newRole, AccountStatus newStatus) {
         boolean losesAdmin = user.getRole() == Role.ADMIN
                 && (newRole != Role.ADMIN || newStatus == AccountStatus.SUSPENDED);

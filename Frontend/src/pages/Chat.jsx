@@ -38,7 +38,7 @@ export function Chat() {
   const [newTitle, setNewTitle] = useState(null)
   const [partner, setPartner] = useState('')
   const scrollRef = useRef(null)
-  // doc 6: "Yazır…" + "Seen · vaxt" - STOMP (qoşulmayıbsa polling qalır)
+  // doc 6: "Typing..." + "Seen - time" - STOMP (polling remains when not connected)
   const [rt, setRt] = useState(realtimeStatus())
   const [typingPeer, setTypingPeer] = useState(null)
   const typingTimer = useRef(null)
@@ -63,14 +63,13 @@ export function Chat() {
     loadConversations()
   }, [])
 
-  // 3 saniyelik polling, real WebSocket yoxdur
+  // 3 second polling, used when there is no real WebSocket
   useEffect(() => {
     const id = setInterval(async () => {
       try {
         setList(await get('/chat/conversations'))
         if (active) await loadMessages(active.id)
       } catch {
-        /* sessizce */
       }
     }, 3000)
     return () => clearInterval(id)
@@ -90,11 +89,11 @@ export function Chat() {
   }
 
   /*
-   * Canlı axın (doc 6 / BACKEND.md §5):
-   *   /topic/chat/{id}          - yeni mesajlar anında
-   *   /topic/chat/{id}/typing   - "Yazır…"
-   *   /topic/chat/{id}/seen     - oxundu işarəsi
-   * Bağlantı yoxdursa heç nə olmur - 3 saniyəlik polling işləyir.
+   * Live stream (doc 6 / BACKEND.md section 5):
+   *   /topic/chat/{id}          - new messages instantly
+   *   /topic/chat/{id}/typing   - "Typing..."
+   *   /topic/chat/{id}/seen     - read marker
+   * Without a connection nothing happens here - 3 second polling runs instead.
    */
   useEffect(() => {
     if (!active || rt !== 'active') return undefined
@@ -118,7 +117,7 @@ export function Chat() {
       loadMessages(id).catch(() => {})
     })
 
-    // söhbəti açan tərəf mesajları oxunmuş işarələyir
+    // the side that opened the conversation marks the messages as read
     rtSend(`/app/chat/${id}/seen`, {})
 
     return () => {
@@ -131,7 +130,7 @@ export function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.id, rt])
 
-  /** Yazanda "Yazır…" göndərir, 2.5 saniyə fasilədən sonra söndürür. */
+  /** Sends "Typing..." while typing and stops it after 2.5 seconds of silence. */
   function onBodyChange(e) {
     setBody(e.target.value)
     if (!active || rt !== 'active') return

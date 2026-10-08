@@ -15,8 +15,8 @@ import lombok.Setter;
 import java.time.Instant;
 
 /**
- * Parol sıfırlama tokeni. BAZADA YALNIZ hash saxlanılır,
- * tokenin özü heç vaxt saxlanmır. 30 dəqiqəlik ömür.
+ * Password reset token. Only the hash is stored in the database,
+ * the token itself is never persisted. 30 minute lifetime.
  */
 @Entity
 @Table(name = "password_reset_token")

@@ -26,13 +26,11 @@ import java.util.Base64;
 import java.util.HexFormat;
 
 /**
- * Parol sıfırlama.
- *
- * Qaydalar:
- *  - forgot hər zaman EYNİ cavab qaytarır (istifadəçi varlığını sızdırmır)
- *  - token təsadüfi, bazada YALNIZ SHA-256 hash, 30 dəqiqə
- *  - token bir dəfəlik (usedAt)
- *  - SMTP yoxdursa link konsola yazılır
+ * Password reset rules:
+ *  - forgot always returns the SAME response (no user enumeration)
+ *  - the token is random, only its SHA-256 hash is stored, 30 minutes
+ *  - the token is single use (usedAt)
+ *  - without SMTP the link goes to the dev mailbox or the console
  */
 @Slf4j
 @Service
@@ -63,7 +61,6 @@ public class PasswordResetService {
         this.devMailbox = devMailbox;
     }
 
-    /** Həmişə eyni mesaj: "If that email exists we sent a link". */
     @Transactional
     public void requestReset(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
@@ -72,7 +69,6 @@ public class PasswordResetService {
             return;
         }
 
-        // saatda 3 sorğu limiti
         if (countRecentFor(user.getId()) >= MAX_PER_HOUR) {
             log.info("Password reset rate limit reached for user {}", user.getId());
             return;
@@ -90,13 +86,11 @@ public class PasswordResetService {
         if (props.getMail().isConfigured()) {
             sendMail(user.getEmail(), link);
         } else if (devMailbox.isEnabled()) {
-            // lokal poçt qutusu: link itmir
             devMailbox.save(user.getEmail(), "Reset your WildCard password", link);
             log.info("=== PASSWORD RESET LINK (SMTP not configured) ===");
             log.info("email: {}", user.getEmail());
             log.info("link : {}", link);
         } else {
-            // SMTP yoxdursa konsola
             log.info("=== PASSWORD RESET LINK (SMTP not configured) ===");
             log.info("email: {}", user.getEmail());
             log.info("link : {}", link);
@@ -117,7 +111,7 @@ public class PasswordResetService {
                 .orElseThrow(() -> new BusinessException("This reset link is no longer valid"));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
-        // login olmuş token-ləri ləğv et
+        // revoke the logged-in sessions after the password change
         userRepository.save(user);
 
         row.setUsedAt(Instant.now());
@@ -137,7 +131,6 @@ public class PasswordResetService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    /** Token bazada heç vaxt düz mətn saxlanmır. */
     private String sha256(String raw) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -166,14 +159,13 @@ public class PasswordResetService {
 
             log.info("Password reset mail sent to {}", to);
         } catch (Exception e) {
-            // e-poçt gedməsə də tətbiq çökmür; link konsola düşür
+            // a delivery failure must not break the flow; the link is also printed to the console
             log.warn("Could not send reset mail to {}: {}", to, e.getMessage());
             log.info("=== PASSWORD RESET LINK (mail failed) ===");
             log.info("link : {}", link);
         }
     }
 
-    /** Köhnəmiş parol sıfırlama tokenlərini təmizləmək (gündə 05:00). */
     @Scheduled(cron = "0 0 5 * * *")
     @Transactional
     public void cleanupExpiredTokens() {

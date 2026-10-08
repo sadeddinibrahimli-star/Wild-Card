@@ -36,7 +36,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                        @Param("followingIds") List<Long> followingIds,
                        Pageable pageable);
 
-    /** category və onlyFollowing filtrləri ilə eyni feed. */
     @Query("""
             select p from Post p
             where p.deleted = false and p.hiddenByModeration = false
@@ -65,12 +64,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                   Pageable pageable);
 
     /**
-     * ANA SƏİFƏ FEED-i: istifadəçinin mövzu çəkisinə görə sıralanır.
+     * HOME FEED: ordered by the user's topic weight.
      *
-     * Reytinq: mövzu affinity (bəyənilmiş mövzular öndə) -> paylaşım (reaction+comment)
-     * -> yeni olmaq.
+     * Rating: topic affinity (liked topics first) -> post activity
+     * (reactions+comments) -> recency.
      *
-     * id : bəyənilmiş mövzular
+     * id : liked topics
      */
     @Query("""
             select p from Post p
@@ -91,8 +90,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                         Pageable pageable);
 
     /**
-     * Köhnə sıralama: əvvəlcə affinity, sonra reaksiya, en son tarix.
-     * Doc 4.3 "sorted by recency OR relevance" - istifadəçi seçə bilir.
+     * Older ordering: affinity first, then reactions, then date.
+     * Doc 4.3 "sorted by recency OR relevance" - the user can choose.
      */
     @Query("""
             select p from Post p
@@ -112,10 +111,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                   @Param("likedTopicIds") List<Long> likedTopicIds,
                                   Pageable pageable);
 
-    /**
-     * Şəxsi feed az post göstərəndə (yeni istifadəçi heç kəsi izləmir,
-     * heç bir mövzu seçməyib) boşluq doldurulur: platformadakı ən yeni postlar.
-     */
     @Query("""
             select p from Post p
             where p.deleted = false and p.hiddenByModeration = false
@@ -130,12 +125,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Object[]> countPerDaySince(@Param("since") LocalDateTime since);
 
 
-    /** Bir istifadeçinin postlarindaki en yüksek reaksiya sayı (WHO LET YOU COOK). */
+    /** Highest reaction count on one of this user's posts (WHO LET YOU COOK). */
     @Query("select coalesce(max((select count(r) from Reaction r where r.post.id = p.id)), 0) " +
            "from Post p where p.author.id = :authorId and p.deleted = false and p.hiddenByModeration = false")
     long maxReactionCountOnAuthorPost(@Param("authorId") Long authorId);
 
-    /** Gece 03:00-03:59 arasinda yazilmis post sayi (NIGHT OWL). */
+    /** Posts written between 03:00 and 03:59 (NIGHT OWL). */
     @Query("select count(p) from Post p where p.author.id = :authorId and p.deleted = false and p.hiddenByModeration = false " +
            "and cast(hour(p.createdAt) as integer) = 3")
     long countNightOwlPosts(@Param("authorId") Long authorId);

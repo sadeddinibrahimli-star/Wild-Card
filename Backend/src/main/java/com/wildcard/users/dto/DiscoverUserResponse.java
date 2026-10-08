@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-/**
- * Discover səhifəsi üçün yüngül istifadəçi kartı.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -26,7 +23,7 @@ public class DiscoverUserResponse {
     private int currentStreak;
     private long totalXp;
     private Instant lastActiveAt;
-    /** Niyə bu istifadəçi təklif olunur. */
+    /** Why this user is suggested. */
     private String reason;
     private boolean isFollowing;
 }

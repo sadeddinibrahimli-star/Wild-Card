@@ -7,10 +7,10 @@ import Icon from '../components/Icon'
 /**
  * Doc 4.1 Administration panel.
  *
- *  - platforma statistikasi (active users, posts/day, XP distributed, reports pending)
- *  - hesab yaratma / redaktə / suspend / reactivate
- *  - rol təyinatı (USER, MODERATOR, ADMIN)
- *  - XP dəyər konfiqurasiyası
+ *  - platform stats (active users, posts/day, XP distributed, reports pending)
+ *  - create / edit / suspend / reactivate accounts
+ *  - role assignment (USER, MODERATOR, ADMIN)
+ *  - XP value configuration
  */
 
 const slug = (v) => String(v).toLowerCase()
@@ -129,7 +129,7 @@ export function Admin({ go }) {
     }
   }
 
-  /** Bütün hesabın postlarını açır - "digər hesabımdan paylaşdıqlarım" buradan görünür. */
+  /** Opens every post of that account - "posts from my other account" are visible here. */
   async function showPosts(u) {
     setOpenPosts(u.id)
     setUserPosts(null)
@@ -164,7 +164,7 @@ export function Admin({ go }) {
     }
   }
 
-  /** doc 4.1: suspend / reactivate. RESTRICTED yalnız post yazmağı bağlayır. */
+  /** doc 4.1: suspend / reactivate. RESTRICTED only blocks creating posts. */
   async function setStatus(user, status) {
     try {
       await patch(`/admin/users/${user.id}/status?status=${status}`)

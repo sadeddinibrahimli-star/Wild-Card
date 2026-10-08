@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { errMsg, get } from '../api'
 
-/** Doc 4.3: "View own XP history and weekly leaderboard position". */
 export function Leaderboard() {
   const [rows, setRows] = useState(null)
   const [mine, setMine] = useState(null)

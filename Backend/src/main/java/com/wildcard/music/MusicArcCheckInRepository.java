@@ -16,9 +16,7 @@ public interface MusicArcCheckInRepository extends JpaRepository<MusicArcCheckIn
 
     List<MusicArcCheckIn> findByArcIdOrderByCheckInDateDesc(Long arcId);
 
-    /**
-     * İstifadəçinin bütün check-in tarixləri - streak hesablanır.
-     */
+    /** All check-in dates of the user - the streak is computed from them. */
     @Query("select c.checkInDate from MusicArcCheckIn c where c.arc.user.id = :userId order by c.checkInDate desc")
     List<LocalDate> checkInDatesFor(@Param("userId") Long userId);
 }

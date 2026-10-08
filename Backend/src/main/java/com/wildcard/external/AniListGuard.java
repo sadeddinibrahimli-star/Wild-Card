@@ -5,8 +5,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Sürüşdərmə pəncərəsi (sliding window) sadə limiter.
- * AniList rəsmi limiti: dəqiqədə 90 request.
+ * Simple sliding-window rate limiter.
+ * AniList official limit: 90 requests per minute.
  */
 final class AniListGuard {
 

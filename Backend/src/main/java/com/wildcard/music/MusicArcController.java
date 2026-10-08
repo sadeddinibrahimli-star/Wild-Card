@@ -35,10 +35,10 @@ public class MusicArcController {
         return ApiResponse.success(musicArcService.getCurrent(SecurityUtils.getCurrentUser()));
     }
 
-    // frontend hər iki verb-i də istifadə edir.
-    // ƏVVƏLCİ bu iki metod ayrı-ayrı idi -> eyni path-ə iki PUT mapping
-    // düşürdü: "Ambiguous handler methods mapped for /music/current"
-    // və PUT /music/current həmişə 500 qaytarırdı. İndi tək metoddur.
+    // The frontend uses both verbs, so they share one handler.
+    // They used to be two separate methods -> both mapped to the same path
+    // ("Ambiguous handler methods mapped for /music/current") and
+    // PUT /music/current always returned 500.
     @RequestMapping(value = "/current", method = {RequestMethod.PUT, RequestMethod.POST})
     public ApiResponse<MusicArcResponse> saveCurrent(@Valid @RequestBody UpdateMusicArcRequest request) {
         return ApiResponse.success("Music arc updated",
@@ -54,9 +54,6 @@ public class MusicArcController {
                 musicArcService.history(SecurityUtils.getCurrentUser(), PageRequest.of(page, size)));
     }
 
-    // ---------------- check-in ----------------
-
-    // mövcud yol qalır: POST /music/arc/checkin
     @PostMapping({"/arc/checkin", "/checkin"})
     public ApiResponse<MusicCheckInResponse> checkIn(
             @Valid @RequestBody(required = false) MusicCheckInRequest request) {
@@ -64,9 +61,6 @@ public class MusicArcController {
                 engagementService.checkIn(SecurityUtils.getCurrentUser(), request));
     }
 
-    // ---------------- arc reaksiyaları ----------------
-
-    // POST qalır, PUT də əlavə olunur (frontend sözleşməsi)
     @RequestMapping(value = "/arcs/{id}/reaction", method = {RequestMethod.POST, RequestMethod.PUT})
     public ApiResponse<MusicArcReactionSummaryResponse> react(
             @PathVariable Long id,

@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * Köhnə bildirişləri təmizləmək.
+ * Removes old notifications.
  *
- *  - oxunmuş bildirişlər 30 gündən köhnədirsə silinir
- *  - oxunmamış bildirişlər 90 gündən köhnədirsə silinir
- *  - gündə bir dəfə, saat 03:20
+ *  - read notifications older than 30 days are deleted
+ *  - unread notifications older than 90 days are deleted
+ *  - once a day at 03:20
  */
 @Slf4j
 @Component

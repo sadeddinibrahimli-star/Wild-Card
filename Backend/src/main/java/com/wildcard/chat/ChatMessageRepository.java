@@ -13,7 +13,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     long countByConversationId(Long conversationId);
 
-    /** Oxunmamış mesajlar (öz göndərdiyi yoxdur). */
     @org.springframework.data.jpa.repository.Query("""
             select count(m) from ChatMessage m
             where m.conversation.id = :conversationId

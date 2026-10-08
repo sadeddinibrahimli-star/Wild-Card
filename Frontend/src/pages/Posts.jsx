@@ -4,8 +4,8 @@ import PostCard, { ReportProvider } from '../components/PostCard'
 import { useAuth } from '../auth'
 
 /**
- * Bir istifadəçinin postları - profilin "Posts" tab-ında.
- * Feed ilə eyni kart komponentini paylaşır (bax, sil, report).
+ * Posts of one user - the "Posts" tab of the profile.
+ * Shares the card component with the feed (view, delete, report).
  */
 export default function Posts({ userId, go }) {
   const open = (p) => window.dispatchEvent(new CustomEvent('wc:report-post', { detail: p }))

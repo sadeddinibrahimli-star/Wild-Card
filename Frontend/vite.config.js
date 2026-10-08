@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Brauzer yalniz 5173 portunu gorur, ona gore CORS yaranmir:
+// The browser only sees port 5173, so there is no CORS:
 //   /api  -> Spring Boot REST
-//   /ws   -> Spring Boot STOMP WebSocket (ws: true MƏCBURİDİR)
+//   /ws   -> Spring Boot STOMP WebSocket (ws: true is REQUIRED)
 export default defineConfig({
   plugins: [react()],
   server: {

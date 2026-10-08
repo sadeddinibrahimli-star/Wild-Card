@@ -4,10 +4,10 @@ import Card from './Card'
 import Icon from './Icon'
 
 /**
- * Feed və profil arasında paylaşılan post kartı.
+ * Post card shared between the feed and the profile.
  *
  * Doc 4.3: "Create, edit and delete personal posts" +
- * Doc 4.2: istifadəçi şikayət edə bilər (moderator baxır).
+ * Doc 4.2: the user can report a post (a moderator reviews it).
  */
 
 const slug = (v) => String(v).toLowerCase()
@@ -21,7 +21,7 @@ const REACTIONS = [
   ['GG', 'GG'],
 ]
 
-/** Şikayət səbəbləri - backend heç bir məcburiyyət qoymur, sadece səbəb saxlayır. */
+/** Report reasons - the backend enforces nothing, it only stores the reason. */
 const REASONS = [
   'Spam or scam',
   'Harassment or hate',
@@ -38,7 +38,7 @@ export default function PostCard({
   go,
   onChange,
   showAuthor = true,
-  showFollow = false,   // yalniz profilde true
+  showFollow = false,   // only true on the profile
   onReport,
 }) {
   const counts = post.reactionCounts || {}
@@ -181,11 +181,10 @@ export default function PostCard({
   )
 }
 
-/* ------------------------------------------------------------------ */
-
 /**
- * Doc 4.2 axını: şikayət toplanır → moderator baxır → silir və ya saxlayır.
- * Report heç bir məzmunu dəyişmir, sadəcə növbəyə düşür.
+ * Doc 4.2 flow: the report is queued -> a moderator reviews it ->
+ * deletes or keeps it. Filing a report never changes the content itself,
+ * it only queues it.
  */
 export function ReportDialog({ post, onClose }) {
   const [reason, setReason] = useState(REASONS[0])
@@ -267,17 +266,16 @@ export function ReportDialog({ post, onClose }) {
 }
 
 /**
- * Report düyməsi + dialoq (Feed, profil, post detail üçün).
- * Provider kimi işləyir: children içində render olunur, "Report" düyməsi
- * avtomatik açılır.
+ * Report button + dialog (feed, profile and post detail).
+ * It acts as a provider: it wraps the children and the "Report" button
+ * opens automatically.
  *
  *   <ReportProvider>{...}</ReportProvider>
  */
 export function ReportProvider({ children }) {
   const [target, setTarget] = useState(null)
 
-  // səhifədən asılı olmayaraq açılır: her səhifə öz Report düyməsini
-  // "wc:report-post" hadisəsi ilə açır, provider isə yalnız dialoqu göstərir.
+  // opens on any page: every page opens its own Report button via the "wc:report-post" event, the provider only renders the dialog
   useEffect(() => {
     const onReport = (e) => setTarget(e.detail)
     window.addEventListener('wc:report-post', onReport)

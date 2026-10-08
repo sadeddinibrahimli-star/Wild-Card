@@ -58,7 +58,7 @@ public class WatchlistItem {
     @Column(length = 1000)
     private String notes;
 
-    /** Xarici katalogdakı id (AniList / TMDB). əl ilə yazılanda null. */
+    /** Id in the external catalog (AniList / TMDB). Null when added manually. */
     @Column(name = "external_id")
     private String externalId;
 

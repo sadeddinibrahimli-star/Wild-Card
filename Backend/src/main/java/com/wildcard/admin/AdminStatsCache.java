@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Platforma statistikasının saat 02:00-da hesablanıb saxlanılan cache'i.
+ * Platform statistics, computed at 02:00 and cached.
  *
- * Dashboard hər sorğuda ağır COUNT-lər etməsin deyə:
- *  - 02:00 də hesablanır
- *  - eyni zamanda heç kim yenilətməyəndə 15 dəqiqəlik TTL ilə qalxır
- *  - yeniləndikdə saat 02:00-dan əvvəlki "yadda" dəyəri qalır (crash-safe)
+ * So the dashboard does not run heavy COUNT queries on every request:
+ *  - computed at 02:00
+ *  - otherwise served with a 15 minute TTL when nobody refreshes
+ *  - once refreshed it keeps the pre-02:00 value (crash-safe)
  */
 @Slf4j
 @Component
@@ -53,7 +53,6 @@ public class AdminStatsCache {
         }
     }
 
-    /** Hər gecə saat 02:00-da avtomatik yenilənir. */
     @Scheduled(cron = "0 0 2 * * *")
     public void nightlyRefresh() {
         log.info("Refreshing platform stats cache (scheduled 02:00)");

@@ -13,9 +13,10 @@ import java.util.List;
 public class WildCardApplication {
 
     /**
-     * Profil: docker və prod = istehsal.
-     * Bu profillərdə sirlar MƏCBURİDİR və yoxlanmasa tətbiq açılmır.
-     * dev/test-də yoxlama işləmir (lokal inkişaf üçün default dəyərlər icazəlidir).
+     * Profiles: docker and prod are production.
+     * In these profiles the secrets are MANDATORY and the application does not
+     * start without them. dev/test skip the check (local development may use
+     * default values).
      */
     private static final List<String> STRICT_PROFILES = List.of("docker", "prod");
 
@@ -25,17 +26,17 @@ public class WildCardApplication {
     }
 
     /**
-     * Tətbiq AÇILMADAN ƏVVƏL dayanır.
+     * Stops the application BEFORE it starts.
      *
-     * Niyə main() daxilində?
-     *  - @PostConstruct və @ConfigurationProperties bağlantı qurulduqdan
-     *    SONRA yoxlayır və xəta "connection failed" kimi görünür;
-     *  - Spring `ignoreUnresolvablePlaceholders=true` ilə işlədiyi üçün
-     *    yml-də ${VAR} yazsan belə xəta atmır.
-     *  main() isə SPIRAL-dan da əvvəl işləyir: heç bir bean yaranmır,
-     *  heç bir TCP bağlantısı açılmır, heç nə "uzaq" deyil.
+     * Why inside main()?
+     *  - @PostConstruct + @ConfigurationProperties only run after the connection
+     *    is established, and the error then looks like a "connection failed";
+     *  - Spring resolves ${VAR} with ignoreUnresolvablePlaceholders=true, so a
+     *    missing variable in yml never throws on its own.
+     *  main() runs before Spring starts: no beans, no TCP connection, nothing
+     *  "remote".
      *
-     * Sirların ÖZÜ heç vaxt mesaja yazılmır - yalnız problemlər yazılır.
+     * The secrets themselves are never printed - only what is wrong.
      */
     static void requireSecretsIfProduction() {
         String[] active = System.getProperty("spring.profiles.active",
@@ -51,18 +52,15 @@ public class WildCardApplication {
 
         List<String> problems = new ArrayList<>();
 
-        // 1) DB parolu
         if (blank(System.getenv("DB_PASSWORD"))) {
             problems.add("DB_PASSWORD is required");
         }
-        // 2) JWT açarı - 32+ simvol
         String jwt = System.getenv("JWT_SECRET");
         if (blank(jwt)) {
             problems.add("JWT_SECRET is required (32+ characters)");
         } else if (jwt.length() < 32) {
             problems.add("JWT_SECRET must be at least 32 characters (got " + jwt.length() + ")");
         }
-        // 3) Admin seed parolu - yalnız seed açıqdursa
         if (Boolean.parseBoolean(env("ADMIN_SEED_ENABLED", "false"))) {
             if (blank(System.getenv("ADMIN_EMAIL"))) {
                 problems.add("ADMIN_EMAIL is required when ADMIN_SEED_ENABLED=true");

@@ -22,7 +22,7 @@ public class UpdateMusicArcRequest {
     @Size(max = 500)
     private String note;
 
-    /** iTunes artworkUrl. */
+    /** Artwork URL coming from iTunes. */
     @Size(max = 500)
     private String albumArtUrl;
 }

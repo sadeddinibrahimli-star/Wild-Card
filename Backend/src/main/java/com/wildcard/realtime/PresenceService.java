@@ -10,16 +10,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Kim kimi "onlayn" göstərir.
- * Yalnız eyni konfiqurasiyalı instance-da saxlanılır (lokal demo üçün kifayətdir).
+ * Who shows as "online".
+ * Kept per configured instance only (enough for the local demo).
  */
 @Slf4j
 @Service
 public class PresenceService {
 
-    /** userId -> session sayı */
+    /** userId -> session count */
     private final Map<Long, Integer> online = new ConcurrentHashMap<>();
-    /** userId -> "Yazır..." başladığı an */
+    /** userId -> when "Typing..." started */
     private final Map<Long, Instant> typingSince = new ConcurrentHashMap<>();
 
     public void userConnected(Long userId) {
@@ -34,7 +34,7 @@ public class PresenceService {
     }
 
     public void onDisconnect(SessionDisconnectEvent event) {
-        // sessiya bağlananda onun user id-si artıq silinib (WS config də edir)
+        // at disconnect the user id has already been removed (WebSocketConfig does it)
         if (event.getUser() != null) {
             log.debug("WS session closed: {}", event.getUser().getName());
         }

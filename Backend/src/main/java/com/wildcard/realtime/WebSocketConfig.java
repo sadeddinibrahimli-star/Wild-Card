@@ -20,20 +20,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * STOMP WebSocket konfiqurasiyası.
+ * STOMP WebSocket configuration.
  *
- * Əlaqə: /ws (SockJS dəstəklənir)
- *  Subscribe:
- *    /topic/chat/{conversationId}   -> yeni mesajlar
- *    /topic/alerts/{userId}         -> bildirişlər
- *    /queue/presence                -> "Yazır..." / "Seen · vaxt"
- *  Publish:
- *    /app/chat/{conversationId}/typing
- *    /app/chat/{conversationId}/seen
+ *  Connection: /ws (SockJS supported)
+ *   Subscribe:
+ *     /topic/chat/{conversationId}   -> new messages
+ *     /topic/alerts/{userId}         -> notifications
+ *     /queue/presence                -> "Typing..." / "Seen - time"
+ *   Publish:
+ *     /app/chat/{conversationId}/typing
+ *     /app/chat/{conversationId}/seen
  *
- * JWT handshake zamanında "Authorization: Bearer <token>" başlığı ilə gəlir
- * (browser WebSocket API başlıq göndərə bilmədiyi üçün
- *  STOMP CONNECT çərçivəsində "Authorization" header də qəbul olunur).
+ * The JWT arrives at the handshake as "Authorization: Bearer <token>"
+ * (the browser WebSocket API cannot send headers, so a STOMP CONNECT
+ * frame may also carry an "Authorization" header).
  */
 @Configuration
 @EnableWebSocketMessageBroker
@@ -67,7 +67,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     return message;
                 }
 
-                // CONNECT çərçivəsində token yoxdursa bağlantı rədd edilir
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     Long userId = authenticate(accessor);
                     if (userId == null) {
@@ -81,8 +80,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     presenceService.userConnected(userId);
                 }
 
-                // Sonrakı hər mesaj üçün SecurityContext qurulur,
-                // yoxsa SecurityUtils.getCurrentUser() işləməz.
+                // The SecurityContext is built for every following message,
+                // otherwise SecurityUtils.getCurrentUser() would not work.
                 var rawAccessor = MessageHeaderAccessor.getAccessor(message, MessageHeaderAccessor.class);
                 Long userId = sessionUserId(accessor);
                 if (userId != null) {
@@ -93,10 +92,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     if (auth != null) {
                         org.springframework.security.core.context.SecurityContextHolder
                                 .getContext().setAuthentication(auth);
-                        // controller-lər Principal qəbul edir
 
-                        // CONNECT-dan sonrakı mesajlar immutable-dır,
-                        // dəyişiklik etmək üçün mutable kopya lazımdır.
+                        // Messages after CONNECT are immutable,
+                        // a mutable copy is needed to attach the authentication.
                         if (rawAccessor instanceof org.springframework.messaging.simp
                                 .SimpMessageHeaderAccessor simp && simp.isMutable()) {
                             simp.setUser(auth);
@@ -115,24 +113,23 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static final String USER_ID = "wildcard.userId";
 
-    /** User id sessiya atributundan oxunur (principal obyekt olur, ona görə getName etmirik). */
+    /** The user id is read from the session attribute (the principal is an object, so getName() is not used). */
     private Long sessionUserId(StompHeaderAccessor accessor) {
         Map<String, Object> session = accessor.getSessionAttributes();
         Object value = session == null ? null : session.get(USER_ID);
         return value instanceof Number n ? n.longValue() : null;
     }
 
-    /** Authorization başlığından JWT-ni oxuyur və user id qaytarır. */
     private Long authenticate(StompHeaderAccessor accessor) {
         String header = headerValue(accessor, "Authorization");
         if (header == null || !header.toLowerCase().startsWith("bearer ")) {
-            // bəzən STOMP başlığı bütün mətn kimi gəlir
+            // some clients send the token in a separate "token" header
             return parse(headerValue(accessor, "token"));
         }
         return parse(header.substring(7).trim());
     }
 
-    /** STOMP başlıqları həssasdır - bəzi müştərilər kiçik hərf göndərir. */
+    /** STOMP headers are case-insensitive - some clients send them in lower case. */
     private String headerValue(StompHeaderAccessor accessor, String name) {
         String direct = accessor.getFirstNativeHeader(name);
         if (direct != null) {

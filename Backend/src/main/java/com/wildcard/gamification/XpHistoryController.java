@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Doc 4.3: "View own XP history".
- *
- * Yalnız öz tarixçəsi oxuna bilər (doc 10 - öz məlumatın).
- * XP yalnız XpService tərəfindən yazıldığı üçün bu endpoint oxumaqdır.
+ * Own XP history only (doc 10 - your own data).
+ * XP is only ever written by XpService, so this endpoint is read-only.
  */
 @RestController
 @RequestMapping("/api/v1/users")

@@ -1,27 +1,27 @@
-# 1-ci merhele: Maven ile jar yigilir
+# stage 1: build the jar with Maven
 FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /build
 
-# Once sadece pom.xml kopyalanir -> dependency ler qatda cache olunur,
-# kaynak kod deyisende yeniden yigilmir (COK vacib).
+# copy only pom.xml first -> dependencies get cached in a layer,
+# so changing the source does not rebuild them (VERY important).
 COPY pom.xml .
 RUN mvn -B dependency:go-offline
 
-# Sonra kaynak kod
+# then the source code
 COPY src ./src
 RUN mvn -B clean package -DskipTests
 
 
-# 2-ci merhele: yalnizca runtime. Maven (~800MB) iceride OLmur.
+# stage 2: runtime only. Maven (~800MB) is NOT included.
 FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-# root olaraq isletmirik
+# do not run as root
 RUN groupadd --system wild && useradd --system --gid wild --create-home wild
-# Qovluqlar YARADILIR, sonra sahib deyilir, sonra USER'e keclidilir.
-# (USER-den SONRA mkdir etsek "Permission denied" aliriq)
+# create the directories FIRST, then chown, then switch to USER.
+# (mkdir AFTER USER gives "Permission denied")
 RUN mkdir -p /app/uploads && chown -R wild:wild /app
 USER wild
 

@@ -56,14 +56,14 @@ export function Notifications() {
     }
   }
 
-  // polling 5s - WebSocket olmasa da yenilənir (fallback)
+  // 5s polling - still refreshed without a WebSocket (fallback)
   useEffect(() => {
     load(false)
     const id = setInterval(() => load(true), 5000)
     return () => clearInterval(id)
   }, [tab])
 
-  // WebSocket-dən ani xəbər gələndə (doc 4.3) dərhal yenilə
+  // refresh immediately when news arrives over the WebSocket (doc 4.3)
   useEffect(() => {
     const onAlert = () => load(true)
     window.addEventListener('wc:alerts', onAlert)

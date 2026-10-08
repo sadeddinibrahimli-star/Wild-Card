@@ -21,23 +21,20 @@ public class ReportResponse {
     private Long commentId;
     private String reason;
 
-    // ---- doc 4.2: "View and triage reported posts and comments" ----
-    // Moderator baxanda SIZI GOREBILMELIDIR - sadece id deyil, məzmunun önizlənməsi.
-    /** Poçt şikayət edilibsə: başlıq / mətn / şəkil / müəllif. */
+    // a moderator must SEE the content, not just the id - include a preview
     private String reportedPostTitle;
     private String reportedPostBody;
     private String reportedPostImageUrl;
     private Long reportedPostAuthorId;
     private String reportedPostAuthorUsername;
-    /** Poçt artıq gizlədilmiş/silinmişdir? */
+    /** true when the reported post is already hidden or deleted. */
     private boolean reportedPostHidden;
 
-    /** Komment şikayət edilibsə: mətn / müəllif. */
     private String reportedCommentBody;
     private Long reportedCommentAuthorId;
     private String reportedCommentAuthorUsername;
 
-    /** Hansı növ şikayət: POST | COMMENT */
+    /** POST | COMMENT */
     private String targetType;
     private ReportStatus status;
     private String resolutionNote;

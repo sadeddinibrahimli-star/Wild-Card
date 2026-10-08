@@ -63,8 +63,8 @@ public class User implements java.security.Principal {
     @Column(nullable = false)
     private int level;
 
-    // @Builder.Default OLMAZSA builder() bu deyerleri null buraxir ve
-    // NOT NULL constraint invoice-nu pozur (app start olmur).
+    // Without @Builder.Default the builder() would leave these values null and
+    // break the NOT NULL constraints (the app would not start).
     @Builder.Default
     @Column(nullable = false)
     private String rarity = "COMMON";
@@ -81,7 +81,7 @@ public class User implements java.security.Principal {
 
     private LocalDate lastActiveDate;
 
-    /** Son fəaliyyət anı (TOUCH GRASS achievement-i bundan hesablanır). */
+    /** Last activity timestamp (used by the TOUCH GRASS achievement). */
     @Builder.Default
     @Column(name = "last_active_at")
     private java.time.Instant lastActiveAt = java.time.Instant.now();
@@ -92,11 +92,11 @@ public class User implements java.security.Principal {
     private boolean onboarded = false;
 
     /**
-     * java.security.Principal - STOMP istifadəçi mənbəyi üçün sabit ad.
-     * 
-     * {@code /user/{ad}/queue/alerts} göndərişləri bu dəyərə uyğun olmalıdır,
-     * ona görə də id istifadə edirik (sendMessage tərəfi də {@code senderId}
-     * göndərir). Object.toString() kimi dəyişən (identity hash) ad işləməzdi.
+     * Stable name for java.security.Principal, used as the STOMP user identity.
+     *
+     * {@code /user/{name}/queue/alerts} sends must match this value, so the id
+     * is used (the send side also sends {@code senderId}). A changing
+     * Object.toString() (identity hash) would not work.
      */
     @Override
     public String getName() {
@@ -111,7 +111,7 @@ public class User implements java.security.Principal {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-        // heç bir yaradıcı yol (builder/new/setter) unudanda da NULL düşməsin
+        // so no construction path (builder/new/setter) can leave it NULL
         if (rarity == null || rarity.isBlank()) {
             rarity = "COMMON";
         }

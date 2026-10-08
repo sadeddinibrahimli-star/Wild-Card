@@ -165,14 +165,14 @@ public class PostService {
     }
 
     /**
-     * ANA SƏİFƏ.
+     * HOME PAGE.
      *
-     * Mənbə: bəyənilmiş mövzular + izlədiyimiz adamlar + öz poçtlarımız.
-     * Sıralama:
-     *  sort=latest (default) -> ən yeni post yuxarıda, vaxtla yığılır.
-     *                               affinity/reaksiya YALNIZ eyni anda yazılan
-     *                               postları fərqləndirir.
-     *  sort=relevance        -> əvvəlcə affinity, sonra reaksiya (köhnə davranış).
+     * Source: liked topics + followed people + own posts.
+     * Ordering:
+     *  sort=latest (default) -> newest post first, time based; affinity and
+     *                           reactions only separate posts written at the
+     *                           same time.
+     *  sort=relevance        -> affinity first, then reactions (older behaviour).
      */
     @Transactional(readOnly = true)
     public PageResponse<PostResponse> homeFeed(User current, Pageable pageable) {
@@ -191,9 +191,9 @@ public class PostService {
 
         List<Post> merged = new ArrayList<>(page.getContent());
 
-        // Yeni istifadəçi heç kəsi izləmədiyi və mövzu seçmədiyi üçün feed
-        // yalnız öz postlarından ibarət olurdu. Birinci səhifədə boşluq qalırsa
-        // platformadakı ən yeni postlarla tamamlayırıq (doc 4.3).
+        // A new user follows nobody and picked no topics, so the feed would only
+        // contain their own posts. If the first page is still short we top it up
+        // with the newest posts on the platform (doc 4.3).
         if (pageable.getOffset() == 0 && merged.size() < pageable.getPageSize()) {
             List<Long> shown = merged.stream().map(Post::getId).toList();
             if (shown.isEmpty()) {
@@ -225,7 +225,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    /** viewerId biləndir myReaction doldurulur. */
+    /** myReaction is only filled when viewerId is known. */
     public PostResponse toResponse(Post post, Long viewerId) {
         PostResponse dto = toResponse(post);
         if (viewerId != null) {
@@ -265,7 +265,7 @@ public class PostService {
             if (value == null || value.isBlank()) {
                 return RECENCY;
             }
-            // sinonimlər: doc "recency or relevance", frontend isə "latest" yazır
+            // synonyms: the doc says "recency or relevance", the frontend sends "latest"
             return switch (value.toLowerCase()) {
                 case "latest", "newest", "recent", "recency" -> RECENCY;
                 case "relevance", "relevant" -> RELEVANCE;

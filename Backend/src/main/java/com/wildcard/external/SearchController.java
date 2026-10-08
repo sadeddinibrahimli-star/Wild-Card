@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Axtarış uçları. Frontend yalnız bu backend-ə gəlir, xarici API-yə birbaşa DEYİL.
+ * Search endpoints. The frontend only talks to this backend,
+ * never to the external APIs directly.
  */
 @RestController
 @RequestMapping("/api/v1/search")
@@ -22,14 +23,14 @@ public class SearchController {
     private final TitleSearchClient titles;
     private final MusicSearchClient music;
 
-    /** ANIME -> AniList, FILM -> TMDB (açar boşdursa boş siyahı). */
+    /** ANIME -> AniList, FILM -> TMDB (empty key -> empty list). */
     @GetMapping("/titles")
     public ApiResponse<List<SearchHit>> titles(@RequestParam("q") String q,
                                                @RequestParam(defaultValue = "ANIME") String type) {
         return ApiResponse.success(titles.search(q, type));
     }
 
-    /** TMDB açarı verilib-verilmədiyini frontendə bildirir. */
+    /** Tells the frontend whether a TMDB key is configured. */
     @GetMapping("/titles/status")
     public ApiResponse<java.util.Map<String, Object>> status() {
         return ApiResponse.success(java.util.Map.of(

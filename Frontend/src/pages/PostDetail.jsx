@@ -39,8 +39,8 @@ export default function PostDetail({ postId, go }) {
   }
 
   useEffect(() => {
-    // postId yoxdursa (overlay hələ açılmayıb) sorğu göndərmirik -
-    // əvvəl hər səhifədə `/posts/null` (400) çıxırdı.
+    // no request while there is no postId (the overlay is not open yet) -
+    // it used to request `/posts/null` (400) on every page
     if (!postId) {
       setPost(null)
       setComments(null)

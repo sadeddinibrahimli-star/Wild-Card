@@ -28,7 +28,6 @@ export function Watchlist() {
     try {
       const page = await get('/watchlist?size=100')
       setItems(page.content)
-      // doc: status-a görə sayım (GET /watchlist/stats)
       get('/watchlist/stats').then(setStats).catch(() => setStats(null))
       setError(null)
     } catch (e) {
@@ -52,7 +51,7 @@ export function Watchlist() {
     }
   }
 
-  /** Backend AniList/TMDB-ə gedir - frontend xarici API-ya getmir. */
+  /** The backend calls AniList/TMDB - the frontend never calls an external API. */
   useEffect(() => {
     get('/search/titles/status')
       .then((s) => setFilmEnabled(!!s.filmSearchEnabled))
@@ -80,7 +79,7 @@ export function Watchlist() {
   }
 
   async function change(item, status) {
-    // xəta olsa da susmurduq - istifadəçi düymənin işlədiyini görməlidir
+    // never fail silently - the user must see that the button worked
     try {
       await put(`/watchlist/${item.id}`, { status })
       await load()
@@ -90,7 +89,7 @@ export function Watchlist() {
     }
   }
 
-  /** Əlavədən sonra reytinqi dəyiş (PUT /watchlist/{id} partial update). */
+  /** Change the rating after adding (PUT /watchlist/{id} partial update). */
   async function rate(item, value) {
     if (value === '') return
     try {

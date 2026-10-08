@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** GET /users/{id}/card — oyun kartının bütün məlumatı. */
 @Data
 @Builder
 @NoArgsConstructor

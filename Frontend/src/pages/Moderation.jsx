@@ -34,7 +34,7 @@ export function Moderation() {
   const [note, setNote] = useState({})
   const [busy, setBusy] = useState(false)
 
-  /** Reportu növbədən çıxarır (PENDING -> REVIEWED -> RESOLVED). */
+  /** Takes the report out of the queue (PENDING -> REVIEWED -> RESOLVED). */
   async function advance(row) {
     const to = NEXT[row.status]
     if (!to) return
@@ -50,9 +50,9 @@ export function Moderation() {
   }
 
   /**
-   * Doc 4.2 + istifadəçi tələbi: moderator qərar verir -
-   *   "heç nə etmə" | "gizlət (bərpa olunur)" | "sil (soft delete)" | "hesabı blokla"
-   * Report heç vaxt özü məzmunu toxunmur.
+   * Doc 4.2 + user request: the moderator decides -
+   *   "do nothing" | "hide (reversible)" | "delete (soft)" | "block the account"
+   * Resolving a report never touches the content itself.
    */
   async function decide(row, action) {
     setBusy(true)
@@ -141,7 +141,7 @@ export function Moderation() {
             </div>
           ))}
 
-          {/* qərarlar: heç nə / gizlət / sil / hesabı blokla */}
+          {/* decisions: nothing / hide / delete / block the account */}
           {rows.map((r) => (
             <div className="card mod-decide" key={'d' + r.id}>
               <div className="row between">
@@ -219,7 +219,8 @@ export function Moderation() {
 
 /**
  * Doc 4.2: "View and triage reported posts and comments".
- * Moderator baxmadan evvel SIZI GORMELIDIR - sadece id deyil, məzmunun özü.
+ * Before a moderator reviews it they must SEE it -
+ * not just the id, but the content itself.
  */
 function Reported({ r }) {
   const [open, setOpen] = useState(false)

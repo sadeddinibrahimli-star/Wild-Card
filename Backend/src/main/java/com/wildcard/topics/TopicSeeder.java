@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * Movzu siyahisini bir defe doldurur.
- * Burada AI yoxdur - movzular ellə teyin olunub, muellif post yazanda
- * ozeli sechir (autocomplete).
+ * Fills the topic list once.
+ * There is no AI here - the topics are hand picked and the author
+ * selects their own when writing a post (autocomplete).
  */
 @Slf4j
 @Configuration

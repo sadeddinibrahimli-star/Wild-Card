@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * XP qiymətləri cədvəlini (xp_config) başlanışda doldurur.
+ * Fills the xp_config price table at startup.
  *
- * Əvvəl heç kim seed etmirdi: təzə bazada xp_config boş qalırdı və
- * admin panelindən qiymət dəyişmək "No XP config for POST" (404) verirdi.
- * Doc 4.1: "Manage XP-value configuration".
+ * Nothing seeded it before: a fresh database kept xp_config empty and
+ * changing a value from the admin panel returned "No XP config for POST"
+ * (404). Doc 4.1: "Manage XP-value configuration".
  */
 @Slf4j
 @Configuration

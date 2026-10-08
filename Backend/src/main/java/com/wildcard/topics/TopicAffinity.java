@@ -22,13 +22,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Bir istifadəçinin bir mövzuya "çəkisi".
+ * A user's "weight" for one topic.
  *
- * score necə artır:
- *   - istifadəçi bu mövzulu poçta REAKSİYA verdikdə  -> +reactionWeight
- *   - istifadəçi mövzuya özü SEÇDİ (settings)          -> explicit = true, score yüksək
+ * How the score grows:
+ *   - the user reacts to a post in this topic -> +reactionWeight
+ *   - the user picked the topic themselves in settings -> explicit = true, higher score
  *
- * explicit = true olan mövzular hər zaman reytinqdə öndə çıxır.
+ * Topics with explicit = true always rank first.
  */
 @Entity
 @Table(name = "topic_affinity",

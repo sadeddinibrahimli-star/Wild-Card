@@ -33,7 +33,6 @@ public class CreateWatchlistItemRequest {
     @Size(max = 1000)
     private String notes;
 
-    /** Xarici katalogdan gələn poster (TMDB / AniList). */
     @Size(max = 500)
     private String posterUrl;
 

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Musiqi axtarışı iTunes Search API (açar tələb etmir).
- * TheAudioDB istifadə OLUNMUR — premium açar tələb edir.
+ * Music search via the iTunes Search API (no key required).
+ * TheAudioDB is NOT used - it needs a paid key.
  */
 @Slf4j
 @Component
@@ -49,7 +49,7 @@ public class MusicSearchClient {
                 if (out.size() >= LIMIT) {
                     break;
                 }
-                // yalnız mahnı (collection) növünü götürürük
+                // only tracks (the collection kind) are kept
                 if (!"track".equals(m.path("wrapperType").asText(null))) {
                     continue;
                 }
@@ -69,7 +69,7 @@ public class MusicSearchClient {
         return out;
     }
 
-    /** artworkUrl100 -> 300x300 (100x100 sonu iki dəfə dəyişir). */
+    // artworkUrl100 -> 300x300 (the size suffix at the end is replaced)
     private String enlarge(String artwork) {
         if (artwork == null || !artwork.contains("100x100")) {
             return artwork;

@@ -19,11 +19,9 @@ public class MusicArcResponse {
     private String note;
     private String albumArtUrl;
     private boolean current;
-    /** Bu gün check-in olunub-olmadığı (yalnız öz profilində hesablanır). */
+    /** Checked in today - only computed on the user's own profile. */
     private boolean checkedInToday;
-    /** Ardıcı gün sayı. */
     private int streakDays;
-    /** Bu istifadəçinin ümumi check-in sayı. */
     private long totalCheckIns;
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;

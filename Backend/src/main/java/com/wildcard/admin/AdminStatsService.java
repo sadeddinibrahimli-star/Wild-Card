@@ -35,7 +35,7 @@ public class AdminStatsService {
 
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalUsers", userRepository.count());
-        // activeUsers = hesab statusu deyil, son 24 saatda REAL aktivlik
+        // activeUsers is not the account status: REAL activity in the last 24 hours
         stats.put("activeUsers", userRepository.countActiveInLast24Hours(java.time.Instant.now().minusSeconds(86400)));
         stats.put("activeUsersAccountStatus", userRepository.countByAccountStatus(AccountStatus.ACTIVE));
         stats.put("suspendedUsers", userRepository.countByAccountStatus(AccountStatus.SUSPENDED));

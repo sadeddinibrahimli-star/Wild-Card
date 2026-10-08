@@ -1,5 +1,5 @@
-# "dev" profili = lokal inkisaf (development) ucun.
-# H2 bazasi RAM-da isleyir. Production ucun bunu DUZMA - application-prod.yml yaz (PostgreSQL).
+# "dev" profile = local development.
+# The H2 database lives in RAM. NEVER use this for production -
 
 spring:
   datasource:
@@ -10,8 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      # "update": Entity siniflerinden cevvlleri avtomatik yaradir.
-      # production-da bu "validate" ve ya Flyway (migration) olmalidir!
+      # "update": creates the tables automatically from the entities.
+      # in production this must be "validate" or Flyway (migrations)!
       ddl-auto: update
     open-in-view: false
 
@@ -21,7 +21,6 @@ spring:
 
   servlet:
     multipart:
-      # 2 MB fayl limiti
       max-file-size: 2MB
       max-request-size: 4MB
 server:
@@ -32,21 +31,21 @@ springdoc:
     path: /swagger-ui.html
 
 wildcard:
-  # YALNIZ DEV: lokal inkişaf üçün admin seed. Bu dəyərlər prod/docker-a KEÇMİR -
-  # application-prod.yml və application-docker.yml parolu yalnız env-dən oxuyur.
+  # DEV ONLY: local admin seed for development. These values do NOT apply to
+  # prod/docker - those profiles read the password only from the environment.
   admin:
     enabled: ${ADMIN_SEED_ENABLED:true}
     email: ${ADMIN_EMAIL:admin@wildcard.local}
     password: ${ADMIN_PASSWORD:dev-admin-local-only}
 
   jwt:
-    # HS256 ucun EN AZ 32 simvol olmalidir
+    # HS256 needs at least 32 characters
     secret: ${JWT_SECRET:}
     issuer: wild-card
     access-token-expiration-minutes: 30
     refresh-token-expiration-days: 14
 
-  # Forgot-password linki: {frontend-url}/#reset/{token}
+  # Forgot-password link: {frontend-url}/#reset/{token}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   require-secrets: false
 
@@ -60,20 +59,20 @@ wildcard:
     watchlist-per-window: 10
 
   affinity:
-    # her reaksiyada bu qadere artir
+    # added with every reaction
     reaction-weight: 1.0
-    # bu reqeme catanda "beyenilmis movzu" sayilir
+    # above this value the topic counts as "liked"
     threshold: 5.0
-    # istifadeci movzunu ozu secerse bu qadere
+    # when the user picks the topic themselves, this much is added
     explicit-score: 10.0
 
   seed:
-    # Lokal demo melumati. Ishletmak ucin SEED_ENABLED=true + SEED_USER_PASSWORD
-    # .env faylinda olmalidir. Ishletde avtomatik ON olur.
+    # Local demo data. To use it, set SEED_ENABLED=true and SEED_USER_PASSWORD
+    # in .env (see .env.example).
     enabled: ${SEED_ENABLED:false}
     user-password: ${SEED_USER_PASSWORD:}
 
-# LOKAL poçt qutusu (SMTP yoxdursa parol sıfırlama linki burada toplanır)
+# LOCAL mailbox (password reset links are collected here when SMTP is missing)
   dev-mailbox:
     enabled: ${DEV_MAILBOX_ENABLED:true}
     file: ${DEV_MAILBOX_FILE:./dev-mailbox.log}

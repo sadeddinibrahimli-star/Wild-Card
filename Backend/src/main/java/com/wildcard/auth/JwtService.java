@@ -41,26 +41,24 @@ public class JwtService {
     }
 
     /**
-     * Açar boşdursa tətbiq ÇÖKMƏMİR: development üçün müvəqqəti açar yaradılır
-     * və xəbərdarlıq yazılır. Production-da mühit dəyişəni mütləq verilməlidir.
+     * No crash when the key is missing: development gets a generated
+     * temporary key and a warning is logged. In production the environment
+     * variable must be provided.
      */
     private static String resolveSecret(String configured, boolean required) {
         if (configured != null && !configured.isBlank()) {
             if (configured.length() < 32) {
-                // qısa açar işləyir, amma xəbərdarlıq verilir
                 log.warn("JWT_SECRET is shorter than 32 characters - a strong secret is required");
             }
             return configured;
         }
 
-        // docker / prod: açar MƏCBURİDİR - tətbiq açılmır
         if (required) {
             throw new IllegalStateException(
                     "JWT_SECRET is required in this environment but it is empty. "
                             + "Set JWT_SECRET (32+ chars) before starting the application.");
         }
 
-        // yalnız dev/test: müvəqqəti açar
         log.warn("JWT_SECRET is not set - using an ephemeral DEVELOPMENT-ONLY secret. "
                 + "This must never happen in production.");
         return "wild-card-development-only-" + java.util.UUID.randomUUID()

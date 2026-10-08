@@ -6,10 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Xarici xidmətlərin açarları və e-poçt ayarları.
+ * Keys for external services and mail settings.
  *
- * Heç bir açar sabit yazılmır. Açar boşdursa müvafiq funksiya
- * sadələşir (axtarış söndürülür / link konsola yazılır) — tətbiq ÇÖKMƏZ.
+ * No key is hardcoded. When a key is empty the related feature simply
+ * degrades (search disabled / link printed to the console) - the app does
+ * not crash.
  */
 @Getter
 @Setter
@@ -24,7 +25,7 @@ public class ExternalProperties {
     @Getter
     @Setter
     public static class Tmdb {
-        /** Boşdursa FILM axtarışı söndürülür. */
+        /** When empty, FILM search is disabled. */
         private String apiKey = "";
         private String baseUrl = "https://api.themoviedb.org/3";
         private String imageBase = "https://image.tmdb.org/t/p/w185";
@@ -34,7 +35,6 @@ public class ExternalProperties {
     @Setter
     public static class Mail {
         private String host = "";
-        /** Boş dəyər (env-da MAIL_PORT=) 25-ə düşür. */
         private Integer port = 25;
         private String username = "";
         private String password = "";

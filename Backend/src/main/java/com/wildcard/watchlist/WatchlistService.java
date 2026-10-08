@@ -78,7 +78,7 @@ public class WatchlistService {
         WatchlistItem saved = watchlistRepository.save(item);
 
         if (becomesCompleted) {
-            // tamamlanan item ucun bonus yalnizca bir dfe
+            // the bonus for a completed item is granted only once
             xpService.grant(user, XpAction.WATCHLIST_COMPLETED,
                     saved.getKind() == MediaKind.ANIME ? XpCategory.ANI : XpCategory.CHA);
         } else {
@@ -109,7 +109,6 @@ public class WatchlistService {
                 .orElseThrow(() -> new NotFoundException("Watchlist item not found: " + itemId));
     }
 
-    /** BACKEND.md: GET /watchlist/stats - siyahının xülasəsi (statusa görə sayım). */
     @Transactional(readOnly = true)
     public WatchlistStats stats(User user) {
         Long id = user.getId();

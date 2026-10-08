@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Moderasiya aksiyasının nəticəsi (gizlətmə / silmə / bərpa).
- */
 @Data
 @Builder
 @NoArgsConstructor

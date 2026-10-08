@@ -52,14 +52,12 @@ public class AdminController {
         return ApiResponse.success(all);
     }
 
-    /** Doc 4.1: "Create ... user accounts" */
     @PostMapping("/users")
     public ApiResponse<UserProfileResponse> createUser(
             @jakarta.validation.Valid @RequestBody com.wildcard.admin.dto.CreateUserRequest request) {
         return ApiResponse.success("Account created", adminUserService.create(request));
     }
 
-    /** Doc 4.1: "update ... user accounts" */
     @PatchMapping("/users/{userId}")
     public ApiResponse<UserProfileResponse> updateUser(
             @PathVariable Long userId,
@@ -67,7 +65,6 @@ public class AdminController {
         return ApiResponse.success("Account updated", adminUserService.update(userId, request));
     }
 
-    /** Doc 4.1: "suspend, and reactivate" */
     @PatchMapping("/users/{userId}/status")
     public ApiResponse<UserProfileResponse> changeStatus(
             @PathVariable Long userId,

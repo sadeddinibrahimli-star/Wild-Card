@@ -1,6 +1,6 @@
-# "docker" profili = Docker Compose ile lokal isletmek ucun.
-# H2 yoxdur! Cunku H2 RAM-da isleyir ve konteyner BASLADILANDA
-# baza sifirlanir. Dockerde davamli baza lazimdir -> PostgreSQL.
+# "docker" profile = running locally with Docker Compose.
+# No H2! H2 lives in RAM and the database is wiped every time the
+# container STARTS. Docker needs a persistent database -> PostgreSQL.
 
 spring:
   datasource:
@@ -11,19 +11,18 @@ spring:
 
   jpa:
     hibernate:
-      # lokal demo: cevvelleri avtomatik yaradir.
-      # REAL serverde bu "validate" olmalidir, yoxsa hamisini itirirsan.
+      # local demo: creates the tables automatically.
+      # on a REAL server this must be "validate", otherwise you lose everything.
       ddl-auto: update
     open-in-view: false
 
   servlet:
     multipart:
-      # 2 MB fayl limiti
       max-file-size: 2MB
       max-request-size: 4MB
 server:
   port: 8080
-  # nginx sondan basa forvard lazimdir
+  # nginx forwards to this port
   forward-headers-strategy: framework
   error:
     include-stacktrace: never
@@ -34,24 +33,24 @@ springdoc:
 
 wildcard:
   jwt:
-    # 32+ simvol. Bosdursa app development acari yaradir ve WARN yazar.
+    # 32+ characters. When empty the app generates a dev key and logs WARN.
     secret: ${JWT_SECRET}
     issuer: wild-card
     access-token-expiration-minutes: 30
     refresh-token-expiration-days: 14
 
   admin:
-    # Ilk admin hesabi yalniz ADMIN_SEED_ENABLED=true ile seed olunur.
+    # The first admin account is only seeded when ADMIN_SEED_ENABLED=true.
     enabled: ${ADMIN_SEED_ENABLED:false}
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD}
 
-  # Forgot-password linki: {frontend-url}/#reset/{token}
+  # Forgot-password link: {frontend-url}/#reset/{token}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   require-secrets: true
 
   storage:
-    # sekiller burada saxlanilir, /files/** dan serve olunur
+    # pictures are stored here and served from /files/**
     local-dir: ${STORAGE_DIR:/app/uploads}
 
   rate-limit:
@@ -66,12 +65,12 @@ wildcard:
     explicit-score: 10.0
 
   seed:
-    # Lokal demo melumati. Ishletmak ucin SEED_ENABLED=true + SEED_USER_PASSWORD
-    # .env faylinda olmalidir. Ishletde avtomatik ON olur.
+    # Local demo data. To use it, set SEED_ENABLED=true and SEED_USER_PASSWORD
+    # in .env (see .env.example).
     enabled: ${SEED_ENABLED:false}
     user-password: ${SEED_USER_PASSWORD:}
 
-# LOKAL poçt qutusu (SMTP yoxdursa parol sıfırlama linki burada toplanır)
+# LOCAL mailbox (password reset links are collected here when SMTP is missing)
   dev-mailbox:
     enabled: ${DEV_MAILBOX_ENABLED:true}
     file: ${DEV_MAILBOX_FILE:./dev-mailbox.log}

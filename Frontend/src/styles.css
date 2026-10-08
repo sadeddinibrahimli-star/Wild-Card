@@ -74,11 +74,11 @@
   --danger-15: rgba(229, 83, 75, 0.15);
   --danger-33: rgba(229, 83, 75, 0.33);
 
-  /* ---- scrim (dim-lənən arxa plan) ---- */
-  --scrim: 6, 7, 14;              /* rgb üçün - "rgb(var(--scrim) / X)" yazılır */
+  /* ---- scrim (dimmed backdrop) ---- */
+  --scrim: 6, 7, 14;              /* used with rgb() - written as "rgb(var(--scrim) / X)" */
   --scrim-strong: 4, 5, 12;
 
-  /* ---- kart arxası naxışı (icazəli gradient) ---- */
+  /* ---- card back pattern (allowed gradient) ---- */
   --card-art-a: #1b2040;
   --card-art-b: #0d0f1c;
   --avatar-backdrop: #0d0f1c;
@@ -161,7 +161,7 @@ textarea { width: 100%; resize: vertical; }
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  /* retro-lite: kölgə 4px -> basanda 1px */
+  /* retro-lite: 4px shadow -> 1px while pressed */
   box-shadow: var(--shadow-hard);
   transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
@@ -373,7 +373,7 @@ textarea { width: 100%; resize: vertical; }
   overflow: hidden;
 }
 
-/* retro-lite: scrollbar zolağı gizlədilib, sağ kənarda qara zolaq olmur */
+/* retro-lite: scrollbar strip hidden - no black bar on the right edge */
 .pane, .crop-modal, .track-list, .msgs, .chat-list, .alerts-scroll, .alerts-drop {
   scrollbar-width: none;
 }
@@ -1102,7 +1102,7 @@ button.nc,button.bk{padding:0;font:inherit}
   border-radius: var(--radius-pill);
 }
 
-/* md: 4 sutunlu grid */
+/* md: 4 column grid */
 .grid-cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1319,7 +1319,7 @@ button.nc,button.bk{padding:0;font:inherit}
   display: grid;
   place-items: center;
   background: rgb(var(--scrim) / 78%);
-  /* retro-lite: blur yoxdur */
+  /* retro-lite: no blur */
 }
 .levelup-card {
   width: 340px;
@@ -1612,20 +1612,20 @@ button.nc,button.bk{padding:0;font:inherit}
 .logo-word { white-space: nowrap; }
 .topbar .logo .logo-c, .login-box .logo-c { color: var(--card-frame); }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SESSİYA ƏLAVƏLƏRİ — palette #4 tokenləri ilə, retro-lite üslubda.
-   (patch versiyası bu qaydaları sildi; burada HEÇ VAXT hex yoxdur)
-   ═══════════════════════════════════════════════════════════════════════ */
+/* =========================================================
+   SESSION EXTRAS - palette #4 tokens, retro-lite style.
+   (the patch version removed these rules; NEVER write hex here)
+   ========================================================= */
 
-/* ---- profil: geri düyməsi sətri ---- */
+/* ---- profile: back button row ---- */
 .prof-head { margin-bottom: 10px; gap: 10px; }
 
-/* ---- feed sıralama seçimi ---- */
+/* ---- feed sort selector ---- */
 .feed-tabs { margin-bottom: var(--gap); }
 .feed-tabs .tabs { margin-bottom: 0; }
 .sort-select { width: auto; min-width: 140px; padding: 5px 8px; font-size: 12px; }
 
-/* ---- kliklənən müəllif / ad ---- */
+/* ---- clickable author / name ---- */
 .post-author {
   background: none;
   border: none;
@@ -1653,7 +1653,7 @@ button.nc,button.bk{padding:0;font:inherit}
 .report-btn { color: var(--muted); }
 .report-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ---- chat: oxunmamış sayı ---- */
+/* ---- chat: unread count ---- */
 .conv-tail { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .unread-badge {
   min-width: 18px;
@@ -1674,7 +1674,7 @@ button.nc,button.bk{padding:0;font:inherit}
 }
 .react .num { margin-left: 3px; font-size: 11px; opacity: 0.8; }
 
-/* ---- profil şəkli kəsmə + report dialoqu ---- */
+/* ---- profile picture crop + report dialog ---- */
 .crop-dim {
   position: fixed;
   inset: 0;
@@ -1730,7 +1730,7 @@ button.nc,button.bk{padding:0;font:inherit}
 .crop-tools input[type='range'] { flex: 1; min-width: 0; }
 .crop-tools .btn { padding: 6px 12px; }
 
-/* ---- music arc: artist axtarışı ---- */
+/* ---- music arc: artist search ---- */
 .music-form { flex-direction: column; align-items: stretch; }
 .music-form .field { display: flex; flex-direction: column; gap: 6px; }
 .music-form .field input { width: 100%; }
@@ -1774,7 +1774,7 @@ button.nc,button.bk{padding:0;font:inherit}
 .track-id { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .track-id strong { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ---- watchlist: vahid poster grid ---- */
+/* ---- watchlist: unified poster grid ---- */
 .wl-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
@@ -1835,7 +1835,7 @@ button.nc,button.bk{padding:0;font:inherit}
 .wl-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .wl-actions { margin-top: auto; display: flex; gap: 6px; align-items: center; }
 .wl-actions select { flex: 1; min-width: 0; font-size: 12px; padding: 4px 6px; }
-/* reytinq seçicisi (★) - status select-dən dar */
+/* rating selector (★) - narrower than the status select */
 .wl-actions select.wl-rating { flex: 0 0 auto; width: 68px; text-align: center; }
 .wl-del {
   display: grid;
@@ -1851,7 +1851,7 @@ button.nc,button.bk{padding:0;font:inherit}
 }
 .wl-del:hover { border-color: var(--danger); color: var(--danger); }
 
-/* ---- admin paneli ---- */
+/* ---- admin panel ---- */
 .notice {
   padding: 9px 12px;
   margin-bottom: var(--gap);
@@ -1869,7 +1869,7 @@ button.nc,button.bk{padding:0;font:inherit}
 .btn.danger { border-color: var(--danger); color: var(--danger); }
 .btn.danger:hover { background: var(--danger-15); }
 
-/* ---- moderasiya qərarları ---- */
+/* ---- moderation decisions ---- */
 .mod-decide {
   display: flex;
   flex-direction: column;
@@ -1893,7 +1893,7 @@ button.nc,button.bk{padding:0;font:inherit}
   border: var(--bw) solid var(--border);
 }
 
-/* ---- profil kartındakı music-arc qabığı düz olsun ---- */
+/* ---- keep the music-arc art straight in the profile card ---- */
 .music-art img {
   width: 100%;
   height: 100%;

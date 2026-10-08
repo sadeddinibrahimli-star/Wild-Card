@@ -20,7 +20,7 @@ export default function RightPanel() {
       .then((p) => setActivity(p.content))
       .catch(() => {})
 
-    // WebSocket-dən ani bildiriş gələndə yenilə (fallback: səhifə açılanda)
+    // refresh as soon as a WebSocket notification arrives (fallback: on page load)
     const onAlert = () => {
       get('/notifications?size=6')
         .then((p) => setActivity(p.content))

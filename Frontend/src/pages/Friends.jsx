@@ -124,7 +124,7 @@ export function Friends({ go }) {
 }
 
 
-/** 4 stat-dan hesablanan uyğunluq, eyni formulaya: 100 - |ferq|. */
+/** Compatibility from 4 stats, same formula: 100 - |difference|. */
 function Match({ me, other }) {
   const hasStats = ['ani', 'gam', 'mus', 'cha'].some((k) => other[k] != null)
   if (!hasStats) return null

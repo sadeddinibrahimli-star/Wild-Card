@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
  * is stored anywhere, so the same username always renders the same picture.
  */
 
-// Rənglər styles.css :root tokenlərindən gəlir - JSX-də sabit hex YOXDUR.
+// colours come from the styles.css :root tokens - no hex values in the JSX
 const PALETTE = [
   'var(--card-frame)',
   'var(--cat-anime)',
@@ -19,10 +19,10 @@ const PALETTE = [
 ]
 const BACKDROP = 'var(--avatar-backdrop)'
 
-const GRID = 5 // cells per side
-const DATA_COLS = 3 // only the left half carries information
-const CELL = 4 // svg units
-const STEP = CELL + 1 // one unit of gap between cells
+const GRID = 5
+const DATA_COLS = 3
+const CELL = 4
+const STEP = CELL + 1
 const SPAN = (GRID - 1) * STEP + CELL // 24: four 1-unit gaps between five 4-unit cells
 
 /** FNV-1a, 32 bit. Stable across browsers and runs. */

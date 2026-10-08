@@ -18,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompatibilityService {
 
-    /** Hesablama 5 dəqiqə cache-lənir. */
     private static final Cache<String, CompatibilityResponse> CACHE = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(5))
             .maximumSize(5_000)

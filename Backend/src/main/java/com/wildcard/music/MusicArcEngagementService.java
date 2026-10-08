@@ -19,9 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * MusicArc check-in (gündəlik dinləmə qeydi) və arc reaksiyaları.
- */
+/** Daily check-ins and arc reactions. */
 @Service
 @RequiredArgsConstructor
 public class MusicArcEngagementService {
@@ -30,8 +28,6 @@ public class MusicArcEngagementService {
     private final MusicArcCheckInRepository checkInRepository;
     private final MusicArcReactionRepository reactionRepository;
     private final XpService xpService;
-
-    // ---------------- check-in ----------------
 
     @Transactional
     public MusicCheckInResponse checkIn(User user, MusicCheckInRequest request) {
@@ -66,7 +62,7 @@ public class MusicArcEngagementService {
                 .build();
     }
 
-    /** Tarixlər DESC sıralıdır: bugün və ya dünən başlamalıdır. */
+    /** The dates are DESC: the streak must start today or yesterday. */
     private int streak(List<LocalDate> datesDesc) {
         if (datesDesc == null || datesDesc.isEmpty()) {
             return 0;
@@ -79,16 +75,14 @@ public class MusicArcEngagementService {
                 streak++;
                 expected = expected.minusDays(1);
             } else if (streak == 0 && d.isBefore(today)) {
-                // keçmiş seriyanı davam etmir
+                // does not continue a past streak
                 break;
             }
         }
         return streak;
     }
 
-    // ---------------- arc reaksiyaları ----------------
-
-    /** Eyni reaksiyanı təkrar basmaq reaksiyanı silir (toggle). */
+    /** Pressing the same reaction again removes it (toggle). */
     @Transactional
     public MusicArcReactionSummaryResponse toggleReaction(User user, Long arcId, ReactionType type) {
         MusicArc arc = requireArc(arcId);
@@ -139,15 +133,15 @@ public class MusicArcEngagementService {
     }
 
     /**
-     * İstifadəçinin check-in statistikası - /music/current cavabına düşür
-     * ki, frontend ayrıca sorğu göndərməsin.
+     * Check-in stats of the user - part of the /music/current response so
+     * the frontend does not need an extra request.
      */
     @Transactional(readOnly = true)
     public long[] checkInStats(Long userId) {
         List<java.time.LocalDateTime> starts =
                 musicArcRepository.startDatesFor(userId);
         if (starts == null || starts.isEmpty()) {
-            return new long[]{0L, 0L, 0L};   // streak, bugün, total
+            return new long[]{0L, 0L, 0L};   // streak, today, total
         }
 
         var checkInRepository2 = checkInRepository;

@@ -19,8 +19,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Bir MusicArc-a gündəlik "check-in".
- * Unikal (arc_id, check_in_date) -> gündə bir dəfə.
+ * A daily "check-in" on a MusicArc.
+ * Unique (arc_id, check_in_date) -> once per day.
  */
 @Entity
 @Table(name = "music_arc_checkins",

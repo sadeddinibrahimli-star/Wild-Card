@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Anime axtarışı AniList GraphQL, film axtarışı TMDB.
+ * Anime search via AniList GraphQL, movie search via TMDB.
  *
- * AniList açar tələb etmir. TMDB açarı boşdursa FILM axtarışı
- * söndürülür və boş siyahı qaytarılır (tətbiq çökmür).
+ * AniList needs no key. When the TMDB key is empty, FILM search is
+ * disabled and an empty list is returned (the app does not crash).
  *
- * Heç bir açar loga və ya cavaba yazılmır.
+ * No key is ever written to logs or responses.
  */
 @Slf4j
 @Component
@@ -43,7 +43,7 @@ public class TitleSearchClient {
     private final ExternalProperties props;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    /** AniList dəqiqədə 90 request limiti. */
+    /** AniList limit: 90 requests per minute. */
     private final AniListGuard aniListGuard = new AniListGuard(ANILIST_PER_MINUTE);
 
     public TitleSearchClient(ExternalHttpClient http, ExternalProperties props) {
@@ -56,7 +56,6 @@ public class TitleSearchClient {
         return key != null && !key.isBlank();
     }
 
-    /** type: ANIME | FILM */
     public List<SearchHit> search(String query, String type) {
         if (query == null || query.isBlank()) {
             return List.of();
@@ -64,13 +63,10 @@ public class TitleSearchClient {
         return "FILM".equalsIgnoreCase(type) ? searchFilms(query) : searchAnime(query);
     }
 
-    // ---------------- ANIME (AniList) ----------------
-
     private List<SearchHit> searchAnime(String query) {
         return searchAniList(query, "ANIME");
     }
 
-    /** AniList: ANIME və ya MOVIE. İkisi də açar tələb etmir. */
     private List<SearchHit> searchAniList(String query, String type) {
         if (!aniListGuard.allow()) {
             log.warn("AniList rate limit reached ({} per minute)", ANILIST_PER_MINUTE);
@@ -121,16 +117,13 @@ public class TitleSearchClient {
         return out;
     }
 
-    // ---------------- FILM (TMDB) ----------------
-
     private List<SearchHit> searchFilms(String query) {
         String key = props.getTmdb().getApiKey();
         if (key == null || key.isBlank()) {
-            // TMDB acari yoxdur - AniList MOVIE ile fallback (yene de acar telab etmir)
+            // no TMDB key - fall back to AniList MOVIE (still needs no key)
             return searchAniList(query, "MOVIE");
         }
 
-        // açar yalnız URL daxilində gedir, heç bir loga yazılmır
         String url = props.getTmdb().getBaseUrl() + "/search/movie?query="
                 + ExternalHttpClient.encode(query) + "&api_key=" + ExternalHttpClient.encode(key);
 
@@ -170,8 +163,6 @@ public class TitleSearchClient {
         return out;
     }
 
-    // ---------------- yardimci ----------------
-
     private String yearOf(String releaseDate) {
         if (releaseDate != null && releaseDate.length() >= 4) {
             return releaseDate.substring(0, 4);
@@ -179,7 +170,7 @@ public class TitleSearchClient {
         return null;
     }
 
-    /** AniList 0-100, TMDB 0-10 -> hər ikisi 0-100. */
+    /** AniList 0-100, TMDB 0-10 -> both are scaled to 0-100. */
     private String normalizeScore(double raw) {
         if (raw <= 0) {
             return null;

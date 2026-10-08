@@ -8,12 +8,12 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * WebSocket yayını üçün təhlükəsiz köməkçi (doc 4.3 real-time notifications).
+ * Safe helper for WebSocket pushes (doc 4.3 real-time notifications).
  *
- * Mesaj yalnız DB-yə yazıldıqdan (commit) SONRA göndərilir ki, REST cavabını
- * oxuyan istifadəçi həmin yazını artıq görə bilsin. WS uğursuz olsa REST axını
- * heç vaxt pozmur - hər şey try/catch içindədir; bağlantı yoxdursa broker
- * sadəcə heç nə etmir (köhnə polling işləməyə davam edir).
+ * The message is only sent AFTER the database write (commit) so a user
+ * reading the REST response already sees the record. A failing WS never
+ * breaks the REST flow - everything is inside try/catch; without a
+ * connection the broker simply does nothing (old polling keeps working).
  */
 @Slf4j
 @Component
@@ -23,10 +23,10 @@ public class WsPush {
     private final SimpMessagingTemplate messaging;
 
     /**
-     * Transaksiya içindəsə commit-dən sonra, deyilsə dərhal göndər.
+     * Send after the commit when inside a transaction, immediately otherwise.
      *
-     * @param destination məs. "/topic/chat/5" və ya "/user/5/queue/alerts"
-     * @param payload     JSON-a çevriləcək obyekt
+     * @param destination e.g. "/topic/chat/5" or "/user/5/queue/alerts"
+     * @param payload     object serialized to JSON
      */
     public void afterCommit(String destination, Object payload) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {

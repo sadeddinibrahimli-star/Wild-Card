@@ -17,11 +17,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Real-time chat axını.
+ * Real-time chat stream.
  *
- *  Mesaj göndərmə:  REST ( mövcud POST ) + STOMP /app/chat/{id}/send
- *  "Yazır…":       /app/chat/{id}/typing   -> /topic/chat/{id}/typing
- *  "Seen · vaxt":  /app/chat/{id}/seen     -> /topic/chat/{id}/seen
+ *  Send message:  REST (existing POST) + STOMP /app/chat/{id}/send
+ *  "Typing...":   /app/chat/{id}/typing   -> /topic/chat/{id}/typing
+ *  "Seen - time": /app/chat/{id}/seen     -> /topic/chat/{id}/seen
  */
 @Controller
 @RequiredArgsConstructor
@@ -32,7 +32,6 @@ public class ChatRealtimeController {
     private final ChatService chatService;
     private final ChatMessageRepository messageRepository;
 
-    /** Mesajı göndərir - canlı yayın ChatService.send içindədir (həm REST, həm STOMP yolu). */
     @MessageMapping("/chat/{conversationId}/send")
     public void send(@DestinationVariable Long conversationId,
                      @Payload SendMessageRequest request,
@@ -41,7 +40,6 @@ public class ChatRealtimeController {
         chatService.send(current(principal), conversationId, request);
     }
 
-    /** "Yazır…" göstərgəsi - 5 saniyə sonra avtomatik sönmək frontend-un işidir. */
     @MessageMapping("/chat/{conversationId}/typing")
     public void typing(@DestinationVariable Long conversationId, java.security.Principal principal) {
         Long userId = current(principal).getId();
@@ -63,7 +61,6 @@ public class ChatRealtimeController {
                 java.util.Map.of("userId", userId, "typing", false));
     }
 
-    /** Konversiyanı açan istifadəçi bütün mesajları oxunmuş işarələyir. */
     @MessageMapping("/chat/{conversationId}/seen")
     public void seen(@DestinationVariable Long conversationId, java.security.Principal principal) {
         Long userId = current(principal).getId();
@@ -77,7 +74,6 @@ public class ChatRealtimeController {
         }
     }
 
-    /** Ayrılma anında " Seen · vaxt" yayılır. */
     @EventListener
     public void onDisconnect(SessionDisconnectEvent event) {
         presence.onDisconnect(event);
@@ -89,7 +85,7 @@ public class ChatRealtimeController {
         messaging.convertAndSend("/queue/presence", java.util.Map.of("onlineUserIds", online));
     }
 
-    /** STOMP mesajlarında SecurityContext olmur - principal-dan istifadə edirik. */
+    /** STOMP messages have no SecurityContext - the principal is used instead. */
     private com.wildcard.users.User current(java.security.Principal principal) {
         if (principal instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth
                 && auth.getPrincipal() instanceof com.wildcard.users.User user) {

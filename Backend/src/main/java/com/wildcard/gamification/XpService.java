@@ -23,13 +23,13 @@ public class XpService {
     private final XpConfigRepository xpConfigRepository;
     private final CardService cardService;
     private final StreakService streakService;
-    // circular dependency: AchievementService hadise dinleyir, XpService ise
-    // TOUCH_GRASS üçun ondan əvvəl hesablama aparır. @Lazy bunu qırır.
+    // circular dependency: AchievementService listens to events, while
+    // @Lazy breaks the cycle: XpService computes first for TOUCH_GRASS.
     private final @org.springframework.context.annotation.Lazy AchievementService achievementService;
 
     private final ApplicationEventPublisher eventPublisher;
 
-    /** Bir hərəkət növü üçün gündəlik maksimum. Spam-ə qarşı. */
+    /** Daily maximum per action type - anti-spam. */
     private static final Map<XpAction, Integer> DAILY_LIMITS = Map.of(
             XpAction.POST, 10,
             XpAction.COMMENT, 30,
@@ -70,7 +70,7 @@ public class XpService {
         this.values = loaded;
     }
 
-    /** Müəyyən dəyərlə grant (achievement bonusu kimi). */
+    /** Grant a fixed amount (achievement bonus style). */
     @Transactional(propagation = Propagation.MANDATORY)
     public void grant(User user, XpAction action, XpCategory category, int amount) {
         if (amount <= 0) {
@@ -99,26 +99,23 @@ public class XpService {
         int levelBefore = user.getLevel();
         cardService.recompute(user);
 
-        // badge-lər hesablanmadan ƏVVƏL streak yenilənir - çünki TOUCH_GRASS
-        // "3 gündən sonra qayıdış" dediyi üçün əvvəlki lastActiveAt lazımdır.
-        // Hesablamadan sonra recordActivity çağırsaydıq lastActiveAt = now olardı
-        // və bu badge heç vaxt açılmazdı.
+        // The streak is updated BEFORE the badges are calculated - TOUCH_GRASS
+        // means "came back after 3 days", so the previous lastActiveAt is needed.
+        // Calling recordActivity() after the calculation would set lastActiveAt = now
+        // and this badge would never unlock.
         achievementService.refresh(user);
 
         streakService.recordActivity(user);
 
-        // level-up bildirişi hadisə ilə (AchievementService dinləyir)
         eventPublisher.publishEvent(new XpGrantedEvent(user, levelBefore, user.getLevel()));
     }
 
-    /** AchievementService badge açılanda bonus XP hadisəsi yayır. */
     @EventListener
     @Transactional(propagation = Propagation.REQUIRED)
     public void onAchievementUnlocked(com.wildcard.achievements.AchievementUnlockedEvent event) {
         grant(event.user(), XpAction.ACHIEVEMENT_BONUS, XpCategory.CHA, event.bonusXp());
     }
 
-    /** Gündəlik limit dolubsa XP verilmir. */
     private boolean isDailyLimitReached(User user, XpAction action) {
         Integer limit = DAILY_LIMITS.get(action);
         if (limit == null) {
@@ -142,7 +139,6 @@ public class XpService {
         return xpLogRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    /** Doc 4.3: "View own XP history" - səhifələnmiş, yalnız öz tarixçəsi. */
     @Transactional(readOnly = true)
     public com.wildcard.common.PageResponse<com.wildcard.gamification.dto.XpLogResponse> historyPage(
             Long userId, org.springframework.data.domain.Pageable pageable) {

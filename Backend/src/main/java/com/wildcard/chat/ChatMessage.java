@@ -46,7 +46,7 @@ public class ChatMessage {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    /** Kim oxudu - göndərən özü "read" sayılır, ona görə null ola bilər. */
+    /** Who read it - the sender counts as reading their own message, so this can be null. */
     @Column(name = "read_at")
     private LocalDateTime readAt;
 

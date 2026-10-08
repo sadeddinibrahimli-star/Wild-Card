@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * ANA SƏİFƏ.
+ * HOME PAGE.
  *
- * Sıralama: istifadəçinin mövzu affinity-si > paylaşım sayı > yenilik.
- * Mənbə: bəyənilmiş mövzuların postları + izlədiyi adamlar + öz poçtları.
+ * Ordering: the user's topic affinity > post activity > recency.
+ * Source: posts of liked topics + people they follow + their own posts.
  */
 @RestController
 @RequestMapping("/api/v1/home")

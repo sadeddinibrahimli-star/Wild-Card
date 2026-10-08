@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Başqa istifadəçinin profilində göstərilən musiqi möhürü.
- */
+/** Music badge shown on another user's profile. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,6 +26,5 @@ public class UserMusicArcResponse {
     private boolean checkedInToday;
     private int streakDays;
     private List<LocalDate> recentCheckIns;
-    /** Bu user-ə qoyulmuş reaksiyaların sayı. */
     private int reactionCount;
 }

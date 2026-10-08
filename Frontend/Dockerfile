@@ -1,9 +1,9 @@
-# 1-ci merhele: node ile build
+# stage 1: build with node
 FROM node:22-alpine AS build
 
 WORKDIR /build
 
-# package.json once kopyalanir -> node_modules qatda cache olunur
+# package.json is copied first -> node_modules are cached in a layer
 COPY package*.json ./
 RUN npm ci
 
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 
-# 2-ci merhele: nginx. Node buferi iceride OLmur (~300MB qazanir)
+# stage 2: nginx. The node base image is not included (~300MB saved)
 FROM nginx:1.27-alpine
 
 COPY --from=build /build/dist /usr/share/nginx/html

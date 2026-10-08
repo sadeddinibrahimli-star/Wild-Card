@@ -2,19 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
 
 /**
- * Profil şəklini kəsmə (crop).
+ * Cropping the profile picture.
  *
- * Keçmişdə şəkil avtomatik "cover" ile kəsilirdi ve istifadeci
- * qerar vera bilmirdi. Burada istifadeci:
- *   - sekili surukleyib (drag) kadri hereket edir
- *   - zoom滑 ilə yaxinlasir
- *   - "Use this picture" ile kestiyi qeyd edir
+ * The picture used to be cropped automatically with "cover" and the user
+ * had no say. Here the user:
+ *    - drags the picture to move the frame
+ *    - zooms with the slider
+ *    - saves the crop with "Use this picture"
  *
- * Netice 512x512 JPEG blob kimi qaytarilir (servere bu gonderilir).
+ * The result comes back as a 512x512 JPEG blob (that is what is sent to the server).
  */
 
-const SIZE = 1024     // kəsilmiş şəklin ölçüsü (profil kartında da aydın görünsün)
-const FRAME = 280     // ekrandakı kadr ölçüsü
+const SIZE = 1024     // size of the cropped output (so it stays sharp on the profile card)
+const FRAME = 280     // frame size on screen
 
 export default function AvatarCrop({ file, onCancel, onDone, busy }) {
   const [img, setImg] = useState(null)
@@ -26,7 +26,6 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
   const imgRef = useRef(null)
   const urlRef = useRef(null)
 
-  // şəkli oxu
   useEffect(() => {
     if (!file) return
     const url = URL.createObjectURL(file)
@@ -40,13 +39,11 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
     }
   }, [file])
 
-  // ən kiçik zoom: şəkil kadrı tam doldurur
   const minZoom = useCallback(() => {
     if (!img) return 1
     return Math.max(FRAME / img.width, FRAME / img.height)
   }, [img])
 
-  // kadr daima şəkli örtür, artıq zoom sürüşdürmə limitini verir
   const limit = useCallback(() => {
     if (!img) return 0
     const scale = minZoom() * zoom
@@ -55,7 +52,6 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
     return Math.max(0, (w - FRAME) / 2)
   }, [img, minZoom, zoom])
 
-  // sürüşdürmə
   useEffect(() => {
     if (!img) return
     setZoom(1)
@@ -84,7 +80,6 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
     setDragging(false)
   }
 
-  // kadrı canvas-a çəkir
   useEffect(() => {
     if (!img) return
     const canvas = canvasRef.current
@@ -96,7 +91,7 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
     const w = img.width * scale
     const h = img.height * scale
 
-    // profil sekli berkak (smooth) olmalidir - pixellestirme yoxdur
+    // the profile picture must stay smooth - no pixelation
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(img, (FRAME - w) / 2 + offset.x, (FRAME - h) / 2 + offset.y, w, h)
@@ -104,7 +99,6 @@ export default function AvatarCrop({ file, onCancel, onDone, busy }) {
     imgRef.current = canvas
   }, [img, zoom, offset, minZoom])
 
-  /** 512x512 JPEG yaradır və yuxarı ötürür. */
   const confirm = () => {
     const src = imgRef.current
     if (!src) return

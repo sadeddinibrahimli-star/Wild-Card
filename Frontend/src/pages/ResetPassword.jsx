@@ -3,11 +3,11 @@ import { errMsg, post } from '../api'
 import Icon from '../components/Icon'
 
 /**
- * Parol sıfırlama səhifəsi — hash routing ilə açılır:
+ * Password reset page - opened with hash routing:
  *
  *   {FRONTEND_URL}/#reset/{token}
  *
- * Backend forgot-password cavabında bu formatda link göndərir.
+ * The backend forgot-password response sends a link in this format.
  */
 
 export function ResetPassword({ token }) {

@@ -15,12 +15,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
- * Xarici API-yə gedən bütün çağırışlar buradan keçir.
+ * Every call to an external API goes through here.
  *
- * Qaydalar:
- *  - timeout 5 saniyə
- *  - cavab 10 dəqiqə cache-lənir
- *  - xəta olanda boş siyahı qaytarılır və WARN yazılır (502 yoxdur)
+ * Rules:
+ *  - 5 second timeout
+ *  - responses are cached for 10 minutes
+ *  - on error an empty list is returned and a WARN is logged (no 502)
  */
 @Slf4j
 @Component
@@ -42,7 +42,7 @@ public class ExternalHttpClient {
                 .build();
     }
 
-    /** GET — boş String qaytarırsa xəta baş verib və ya cache boşdur. */
+    /** GET - an empty String means an error occurred or the cache is empty. */
     public String getJson(String url) {
         String cached = cache.getIfPresent(url);
         if (cached != null) {
@@ -65,13 +65,11 @@ public class ExternalHttpClient {
             cache.put(url, response.body());
             return response.body();
         } catch (Exception e) {
-            // xəta olanda tətbiq ÇÖKMƏZ, boş siyahı qaytarılır
             log.warn("External API {} failed: {}", host(url), e.getMessage());
             return "";
         }
     }
 
-    /** POST JSON (AniList GraphQL). */
     public String postJson(String url, String body) {
         String key = "POST " + url + " " + body.hashCode();
         String cached = cache.getIfPresent(key);
@@ -100,7 +98,7 @@ public class ExternalHttpClient {
         }
     }
 
-    /** Açarı URL-ə yazmır (log/mesaj təhlükəsi). */
+    /** The key is never written into the URL (log/message safety). */
     private String host(String url) {
         int i = url.indexOf("//");
         if (i < 0) {

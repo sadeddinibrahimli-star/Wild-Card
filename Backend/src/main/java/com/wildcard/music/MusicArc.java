@@ -45,7 +45,7 @@ public class MusicArc {
     @Column(length = 500)
     private String note;
 
-    /** Albom qabığı (iTunes artworkUrl100). */
+    /** Album art (iTunes artworkUrl100). */
     @Column(name = "album_art_url", length = 500)
     private String albumArtUrl;
 

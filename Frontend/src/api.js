@@ -2,14 +2,13 @@ import axios from 'axios'
 
 const client = axios.create({ baseURL: '/api/v1' })
 
-// her soruga token elave olunur
 client.interceptors.request.use((cfg) => {
   const token = localStorage.getItem('wc_token')
   if (token) cfg.headers.Authorization = `Bearer ${token}`
   return cfg
 })
 
-// 401 olsa tokeni silib login-e at
+// on 401: drop the token and go to login
 client.interceptors.response.use(
   (r) => r,
   (err) => {

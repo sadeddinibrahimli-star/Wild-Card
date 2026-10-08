@@ -26,8 +26,8 @@ public interface MusicArcRepository extends JpaRepository<MusicArc, Long> {
     int archiveCurrent(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     /**
-     * Musiqi arc-lərinin başlanma anları (ON REPEAT üçün).
-     * function('date', ...) H2-də yoxdur - Java-da konvertasiya edirik.
+     * Start dates of the music arcs (for ON REPEAT).
+     * function('date', ...) does not exist on H2 - the conversion happens in Java.
      */
     @Query("select a.startedAt from MusicArc a " +
            "where a.user.id = :userId and a.startedAt is not null order by a.startedAt desc")

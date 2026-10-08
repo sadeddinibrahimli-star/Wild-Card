@@ -16,11 +16,10 @@ public class AchievementResponse {
     private String title;
     private String description;
     private String rarity;    // COMMON | RARE | EPIC | LEGENDARY
-    private String icon;      // line icon key for the frontend
+    private String icon;
     private boolean unlocked;
-    /** Badge nə vaxt açıldı (unlocked deyilsə null). */
     private java.time.Instant unlockedAt;
-    /** null when the achievement is not calculated yet. */
+    /** null when the achievement has not been calculated yet. */
     private Integer current;
     private Integer target;
     private Integer max;

@@ -6,9 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Bütün mühit dəyişənləri BURADA oxunur. Heç bir açar kodda sabit
- * (default) dəyər olaraq yazılmır — əks halda funksiya sadələşir və
- * loglanır, tətbiq ÇÖKMƏMİR.
+ * Every environment variable is read HERE. No key is hardcoded as a
+ * default in the code - otherwise the feature silently degrades
+ * (and is logged), but the app never crashes.
  */
 @Getter
 @Setter
@@ -25,7 +25,7 @@ public class WildcardProperties {
     @Getter
     @Setter
     public static class Jwt {
-        /** Boşdursa JwtService development üçün müvəqqəti açar yaradır. */
+        /** When empty, JwtService generates a temporary development key. */
         private String secret = "";
         private long accessTokenExpirationMinutes = 60;
         private long refreshTokenExpirationDays = 30;
@@ -63,21 +63,20 @@ public class WildcardProperties {
         private String localDir = "uploads";
     }
 
-    /** Lokal demo məlumatı. İstehsalda false. */
     private final Seed seed = new Seed();
 
     @Getter
     @Setter
     public static class Seed {
         private boolean enabled = false;
-        /** Demo istifadəçilərinin parolu - heç vaxt koda yazılmır. */
+        /** Password of the demo users - never hardcoded. */
         private String userPassword = "";
     }
 
-    /** Frontend-in ümumi URL-i - parol sıfırlama linki bundan yığılır. */
+    /** Base URL of the frontend - the password reset link is built from it. */
     private String frontendUrl = "http://localhost:5173";
 
-    /** İstehsalda dayanmaq üçün: açar boşdursa tətbiq açılmır. */
+    /** Production guard: when enabled the app refuses to start with an empty key. */
     private boolean requireSecrets = false;
 
 }
